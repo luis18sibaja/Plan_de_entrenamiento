@@ -101,6 +101,11 @@
         .accordion-icon {
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
+        .calendar-day { background-color: #374151; border-radius: 0.5rem; text-align: center; padding: 0.75rem 0.25rem; cursor: pointer; transition: all 0.2s ease-in-out; }
+        .calendar-day:hover { background-color: #4b5563; }
+        .calendar-day.completed { background-color: #f97316; color: white; font-weight: bold; }
+        .calendar-day.other-month { color: #6b7280; }
     </style>
 </head>
 <body class="antialiased">
@@ -123,8 +128,23 @@
                 <button data-month="3" class="month-tab flex-1 py-3 px-2 text-center font-bold text-lg transition-all duration-300 rounded-full tab-inactive">Mes 3: Potencia</button>
             </nav>
         </div>
+        
+        <section id="progress-section" class="my-10 initial-hidden">
+            <h2 class="text-3xl font-bold text-slate-200 mb-4 text-center">Mi Progreso</h2>
+            <div class="bg-gray-800/50 p-6 rounded-2xl shadow-lg border border-gray-700">
+                <div class="flex justify-between items-center mb-4">
+                    <button id="prev-month" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&lt;</button>
+                    <h3 id="month-year" class="text-xl font-bold text-white"></h3>
+                    <button id="next-month" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&gt;</button>
+                </div>
+                <div class="grid grid-cols-7 gap-2 text-center text-xs text-slate-400 mb-2">
+                    <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+                </div>
+                <div id="calendar-grid" class="calendar"></div>
+            </div>
+        </section>
 
-        <main id="plan-content" class="transition-opacity duration-500 mt-8">
+        <main id="plan-content" class="transition-opacity duration-500">
         </main>
 
     </div>
@@ -136,7 +156,7 @@
             </div>
             <div class="p-6 pt-0 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                 <div>
-                    <img id="modal-img" src="" alt="Demostración del ejercicio" class="w-full h-auto object-cover rounded-xl shadow-lg" onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/4a5568?text=Imagen+no+disponible';">
+                    <img id="modal-img" src="" alt="Demostración del ejercicio" class="w-full h-auto object-cover rounded-xl shadow-lg" onerror="this.onerror=null;this.src='https://placehold.co/600x400/111827/d1d5db?text=Imagen+no+disponible';">
                 </div>
                 <div class="flex flex-col h-full">
                     <div id="modal-tags" class="mb-3"></div>
@@ -148,19 +168,49 @@
         </div>
     </div>
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+
 const planData = {
-    warmup: [
-        { name: "Respiración Diafragmática", desc: "Tumbado boca arriba, inhala profundo por la nariz durante 4 segundos, sintiendo cómo se expande tu abdomen. Sostén 2 segundos y exhala lentamente por la boca durante 6 segundos. Repite por 5 minutos.", img: "https://i.imgur.com/v6mB4gC.gif", category: "Movilidad" },
-        { name: "Gato-Vaca", reps: "15 reps", desc: "A gatas, con las manos debajo de los hombros y las rodillas debajo de las caderas. Inhala mientras arqueas la espalda (vaca) y exhala mientras la redondeas (gato). Muévete de forma lenta y controlada.", img: "https://i.imgur.com/sS4m3t4.gif", category: "Movilidad" },
-        { name: "Bird-Dog", reps: "10 reps x lado", desc: "A gatas, contrae el abdomen. Extiende un brazo hacia adelante y la pierna opuesta hacia atrás, formando una línea recta. Mantén la posición por 3-6 segundos sin dejar que la cadera rote. Vuelve y alterna.", img: "https://i.imgur.com/Q2xY1VN.gif", category: "Core" },
-        { name: "Rotaciones Torácicas Cuadrúpedas", reps: "10 reps x lado", desc: "A gatas, coloca una mano detrás de la cabeza. Rota el codo hacia el techo, siguiendo con la mirada. Baja lentamente y repite.", img: "https://i.imgur.com/jQ7D3Tz.gif", category: "Movilidad"}
-    ],
-    cooldown: [
-        { name: "Estiramiento de Psoas", reps: "45 seg x lado", desc: "Ponte de rodillas y adelanta un pie, formando un ángulo de 90 grados. Contrae el glúteo de la pierna trasera y empuja suavemente la cadera hacia adelante.", img: "https://i.imgur.com/bT6g4jE.gif", category: "Flexibilidad" },
-        { name: "Estiramiento de Glúteos (Figura 4)", reps: "45 seg x lado", desc: "Tumbado boca arriba, cruza un tobillo sobre la rodilla opuesta. Sujeta el muslo de la pierna de apoyo y tira suavemente hacia tu pecho.", img: "https://i.imgur.com/k6J1s5T.gif", category: "Flexibilidad" },
-        { name: "Estiramiento de Pectorales en Puerta", reps: "45 seg", desc: "En el marco de una puerta, coloca los antebrazos a cada lado con los codos a la altura de los hombros. Da un paso adelante hasta sentir un estiramiento en el pecho.", img: "https://i.imgur.com/qg9nIeC.gif", category: "Flexibilidad" },
-        { name: "Colgarse de una Barra (Pasivo)", reps: "30-60 seg", desc: "Si tienes una barra, simplemente cuélgate. Deja que la gravedad estire tu espalda y hombros. Puedes mantener los pies en el suelo si es necesario.", img: "https://i.imgur.com/dGoB112.gif", category: "Movilidad" }
-    ],
+    warmups: {
+        "1": [
+            { name: "Respiración Diafragmática", desc: "Tumbado boca arriba, inhala profundo por la nariz (4s), siente cómo se expande tu abdomen, no el pecho. Sostén (2s) y exhala lentamente por la boca (6s). Esto calma el sistema nervioso y prepara tu core desde adentro. Repite por 2-3 minutos.", img: "https://i.imgur.com/v6mB4gC.gif", category: "Movilidad" },
+            { name: "Gato-Vaca", reps: "15 reps", desc: "A gatas, inhala mientras arqueas la espalda y miras al frente (Vaca). Exhala mientras redondeas la columna y metes la barbilla (Gato). Esencial para lubricar las vértebras y despertar la columna.", img: "https://i.imgur.com/sS4m3t4.gif", category: "Movilidad" },
+            { name: "Bird-Dog", reps: "10 reps x lado", desc: "A gatas, contrae el abdomen y extiende un brazo al frente y la pierna opuesta hacia atrás. Imagina que tienes una bandeja en la espalda y no puedes derramarla. Mantén 3 segundos. Mejora la estabilidad del core y la coordinación.", img: "https://i.imgur.com/Q2xY1VN.gif", category: "Core" },
+            { name: "Rotaciones Torácicas Cuadrúpedas", reps: "10 reps x lado", desc: "A gatas, una mano en la nuca. Rota el codo hacia el techo, abriendo el pecho. Es clave para la movilidad de la espalda alta, un área que a menudo acumula rigidez.", img: "https://i.imgur.com/jQ7D3Tz.gif", category: "Movilidad"}
+        ],
+        "2": [
+            { name: "Círculos de Brazos y Piernas", reps: "10 por dirección", desc: "De pie, realiza círculos amplios y controlados con los brazos hacia adelante y atrás. Luego, apóyate en algo y haz lo mismo con cada pierna. Esto lubrica las articulaciones del hombro y la cadera.", img: "https://i.imgur.com/pMWF83v.gif", category: "Movilidad" },
+            { name: "Sentadilla Profunda con Rotación", reps: "8 reps x lado", desc: "Baja a una sentadilla profunda, lo más que puedas cómodamente. Apoya un codo en la parte interna de la rodilla y rota el otro brazo hacia el techo. Abre la cadera y la columna torácica simultáneamente.", img: "https://i.imgur.com/e32sgrz.gif", category: "Movilidad" },
+            { name: "Plancha con Pasos Laterales", reps: "20 pasos totales", desc: "En posición de plancha alta (manos), da pequeños pasos laterales con manos y pies, moviéndote como un cangrejo. Activa el core y los estabilizadores del hombro de forma dinámica.", img: "https://i.imgur.com/tH3aL5P.gif", category: "Core" },
+            { name: "Bisagra de Cadera (Good Morning)", reps: "15 reps", desc: "De pie, manos en la nuca, rodillas ligeramente flexionadas. Empuja la cadera hacia atrás como si quisieras cerrar una puerta, manteniendo la espalda recta. Activa toda la cadena posterior.", img: "https://i.imgur.com/0iSgUu1.gif", category: "Fuerza" }
+        ],
+        "3": [
+            { name: "Saltos de Tijera (Jumping Jacks)", reps: "30 segundos", desc: "Un clásico para elevar el ritmo cardíaco y calentar todo el cuerpo de forma coordinada. Mantén un ritmo constante.", img: "https://i.imgur.com/6aY4j2P.gif", category: "Potencia" },
+            { name: "Sentadilla a Zancada Inversa", reps: "8 reps x lado", desc: "Realiza una sentadilla, y al subir, lleva una pierna directamente hacia atrás a una zancada inversa. Fluye de un movimiento a otro. Prepara los patrones de movimiento del día.", img: "https://i.imgur.com/Y351gM4.gif", category: "Coordinación" },
+            { name: "Plancha a Perro Boca Abajo", reps: "12 reps", desc: "Desde una plancha alta, eleva la cadera hacia el techo formando una 'V' invertida (Perro Boca Abajo), estirando la espalda y los isquiotibiales. Vuelve a la plancha. Flujo dinámico.", img: "https://i.imgur.com/vLhSgP3.gif", category: "Movilidad" },
+            { name: "Paseo del Monstruo (con banda)", reps: "10 pasos x lado", desc: "Si tienes una minibanda, colócala arriba de las rodillas. En posición de media sentadilla, da pasos laterales manteniendo la tensión. Si no tienes banda, hazlo igual, activando los glúteos.", img: "https://i.imgur.com/R3C4dC7.gif", category: "Fuerza" }
+        ]
+    },
+    cooldowns: {
+        "1": [
+            { name: "Estiramiento de Isquiotibiales", reps: "45 seg x lado", desc: "Sentado, una pierna estirada, la otra flexionada con el pie en el muslo interno. Inclínate hacia adelante desde la cadera, manteniendo la espalda recta. No intentes tocar el pie, solo busca el estiramiento.", img: "https://i.imgur.com/S9s4F16.gif", category: "Flexibilidad" },
+            { name: "Estiramiento de Cuádriceps (de pie)", reps: "45 seg x lado", desc: "De pie, sujétate a algo si es necesario. Lleva el talón al glúteo, manteniendo las rodillas juntas. Siente el estiramiento en la parte frontal del muslo.", img: "https://i.imgur.com/pG8kH2G.gif", category: "Flexibilidad" },
+            { name: "Estiramiento del Gato (Postura del Niño)", reps: "60 seg", desc: "Desde la posición a gatas, lleva la cadera hacia los talones y extiende los brazos al frente, apoyando la frente en el suelo. Relaja toda la espalda.", img: "https://i.imgur.com/bT6g4jE.gif", category: "Flexibilidad" },
+            { name: "Torsión Espinal (tumbado)", reps: "45 seg x lado", desc: "Tumbado, lleva una rodilla al pecho y luego crúzala por encima del cuerpo, girando la cadera. Mantén ambos hombros en el suelo. Libera la tensión de la espalda baja.", img: "https://i.imgur.com/pMWF83v.gif", category: "Movilidad" }
+        ],
+        "2": [
+            { name: "Estiramiento de la Paloma", reps: "60 seg x lado", desc: "Desde plancha, lleva una rodilla hacia la mano del mismo lado y estira la otra pierna hacia atrás. Un estiramiento profundo para el glúteo y el psoas. Si es muy intenso, haz la versión 'Figura 4' tumbado.", img: "https://i.imgur.com/0iSgUu1.gif", category: "Flexibilidad" },
+            { name: "Estiramiento de Aductores (Mariposa)", reps: "60 seg", desc: "Sentado, junta las plantas de los pies y acerca los talones al cuerpo. Presiona suavemente las rodillas hacia el suelo con los codos para estirar la parte interna de los muslos.", img: "https://i.imgur.com/R3C4dC7.gif", category: "Flexibilidad" },
+            { name: "Estiramiento de Hombro Cruzado", reps: "45 seg x brazo", desc: "Lleva un brazo recto a través del pecho y presiona suavemente con el otro brazo para estirar la parte posterior del hombro.", img: "https://i.imgur.com/qg9nIeC.gif", category: "Flexibilidad" },
+            { name: "Postura del Perro Boca Abajo", reps: "60 seg", desc: "Desde plancha, eleva la cadera al techo. Presiona los talones hacia el suelo (no importa si no tocan) y mantén la espalda larga. Estira toda la cadena posterior del cuerpo.", img: "https://i.imgur.com/vLhSgP3.gif", category: "Movilidad" }
+        ],
+        "3": [
+            { name: "Estiramiento del 'Couch Stretch'", reps: "60 seg x lado", desc: "Coloca una rodilla en la esquina de una pared y el pie en la pared. Adelanta la otra pierna. Es el estiramiento más intenso y efectivo para el cuádriceps y el psoas. Procede con cuidado.", img: "https://i.imgur.com/Y351gM4.gif", category: "Flexibilidad" },
+            { name: "Estiramiento de la Rana", reps: "60 seg", desc: "A gatas, separa las rodillas lo más que puedas cómodamente, con los pies hacia afuera. Baja la cadera hacia el suelo para un estiramiento profundo de aductores.", img: "https://i.imgur.com/9D6o9a8.gif", category: "Flexibilidad" },
+            { name: "Estiramiento de Tríceps sobre la Cabeza", reps: "45 seg x brazo", desc: "Levanta un brazo, flexiona el codo y deja caer la mano por detrás de la cabeza. Usa la otra mano para presionar suavemente el codo hacia abajo.", img: "https://i.imgur.com/k6J1s5T.gif", category: "Flexibilidad" },
+            { name: "Estiramiento de Muñecas y Antebrazos", reps: "30 seg cada posición", desc: "A gatas, apoya las palmas de las manos con los dedos apuntando hacia ti. Luego, apoya el dorso de las manos. crucial para la salud de las muñecas en calistenia.", img: "https://i.imgur.com/LFRuL1d.gif", category: "Movilidad" }
+        ]
+    },
     months: {
         "1": {
             title: "Mes 1: Adaptación y Técnica",
@@ -252,7 +302,10 @@ const planData = {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+    let completedDays = {};
+    let currentDisplayDate = new Date();
+    const STORAGE_KEY = 'workoutProgress';
+
     const planContent = document.getElementById('plan-content');
     const monthTabs = document.querySelectorAll('.month-tab');
     const progressBar = document.getElementById('progress-bar');
@@ -310,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.className = 'exercise-card bg-gray-800/50 p-3 rounded-xl shadow-lg flex items-center gap-4 cursor-pointer hover:shadow-2xl hover:ring-2 hover:ring-orange-500 transition-all duration-300 transform hover:-translate-y-1 group';
         card.dataset.exerciseName = exercise.name;
         card.innerHTML = `
-            <img src="${exercise.img}" alt="${exercise.name}" class="w-24 h-24 object-cover rounded-lg bg-slate-700 flex-shrink-0" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/100x100/e2e8f0/4a5568?text=Img';">
+            <img src="${exercise.img}" alt="${exercise.name}" class="w-24 h-24 object-cover rounded-lg bg-slate-700 flex-shrink-0" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/100x100/111827/d1d5db?text=Img';">
             <div class="flex-grow">
                 <h4 class="font-bold text-lg text-slate-100">${exercise.name}</h4>
                 ${exercise.reps ? `<p class="text-slate-400">${exercise.reps}</p>` : ''}
@@ -321,7 +374,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function renderDay(month, day) {
-        const dayData = planData.months[month].days[day];
+        const monthData = planData.months[month];
+        const dayData = monthData.days[day];
+        const warmupData = planData.warmups[month];
+        const cooldownData = planData.cooldowns[month];
         const workoutDetails = document.getElementById('workout-details');
         
         workoutDetails.innerHTML = `
@@ -357,13 +413,13 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         
         const warmupContainer = document.getElementById('warmup-container');
-        planData.warmup.forEach(ex => warmupContainer.appendChild(createExerciseCard(ex)));
+        warmupData.forEach(ex => warmupContainer.appendChild(createExerciseCard(ex)));
         
         const hiitContainer = document.getElementById('hiit-container');
         dayData.exercises.forEach(ex => hiitContainer.appendChild(createExerciseCard(ex)));
 
         const cooldownContainer = document.getElementById('cooldown-container');
-        planData.cooldown.forEach(ex => cooldownContainer.appendChild(createExerciseCard(ex)));
+        cooldownData.forEach(ex => cooldownContainer.appendChild(createExerciseCard(ex)));
         
         document.querySelectorAll('.accordion-header').forEach(header => {
             header.addEventListener('click', () => {
@@ -432,7 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cardTarget = e.target.closest('.exercise-card');
                 if(cardTarget){
                     const exerciseName = cardTarget.dataset.exerciseName;
-                    const allExercises = [...planData.warmup, ...planData.cooldown];
+                    const allExercises = [...planData.warmups[1],...planData.warmups[2],...planData.warmups[3], ...planData.cooldowns[1],...planData.cooldowns[2],...planData.cooldowns[3]];
                     Object.values(planData.months).forEach(m => Object.values(m.days).forEach(d => allExercises.push(...d.exercises)));
                     const exercise = allExercises.find(ex => ex.name === exerciseName);
                     showModal(exercise);
@@ -463,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     borderColor: '#1f2937',
                     borderWidth: 0,
                     hoverOffset: 8,
-                    hoverBorderColor: '#fef3c7'
+                    hoverBorderColor: '#111827'
                 }]
             };
 
@@ -519,15 +575,82 @@ document.addEventListener('DOMContentLoaded', () => {
             progressBar.style.width = `${(parseInt(month) / 3 * 100)}%`;
         });
     });
+    
+    // Calendar Logic using localStorage
+    const monthYearEl = document.getElementById('month-year');
+    const calendarGridEl = document.getElementById('calendar-grid');
 
+    function loadProgress() {
+        const data = localStorage.getItem(STORAGE_KEY);
+        completedDays = data ? JSON.parse(data) : {};
+    }
+
+    function saveProgress() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(completedDays));
+    }
+
+    function renderCalendar() {
+        calendarGridEl.innerHTML = '';
+        const year = currentDisplayDate.getFullYear();
+        const month = currentDisplayDate.getMonth();
+        monthYearEl.textContent = `${currentDisplayDate.toLocaleString('es-ES', { month: 'long' })} ${year}`;
+
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            calendarGridEl.innerHTML += `<div class="other-month"></div>`;
+        }
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dayEl = document.createElement('div');
+            dayEl.textContent = i;
+            dayEl.className = 'calendar-day';
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+            dayEl.dataset.date = dateStr;
+            if (completedDays[dateStr]) {
+                dayEl.classList.add('completed');
+            }
+            calendarGridEl.appendChild(dayEl);
+        }
+    }
+
+    document.getElementById('prev-month').addEventListener('click', () => {
+        currentDisplayDate.setMonth(currentDisplayDate.getMonth() - 1);
+        renderCalendar();
+    });
+
+    document.getElementById('next-month').addEventListener('click', () => {
+        currentDisplayDate.setMonth(currentDisplayDate.getMonth() + 1);
+        renderCalendar();
+    });
+    
+    calendarGridEl.addEventListener('click', e => {
+        const target = e.target.closest('.calendar-day');
+        if (target && target.dataset.date) {
+            const date = target.dataset.date;
+            if (completedDays[date]) {
+                delete completedDays[date];
+            } else {
+                completedDays[date] = true;
+            }
+            saveProgress();
+            renderCalendar();
+        }
+    });
+
+    // Initial Load
+    loadProgress();
+    renderCalendar();
     document.querySelectorAll('.initial-hidden').forEach((el, index) => {
         setTimeout(() => {
             el.classList.add('fade-in');
         }, 100 * (index + 1));
     });
-
     renderPlan('1');
+
 });
 </script>
 </body>
 </html>
+
