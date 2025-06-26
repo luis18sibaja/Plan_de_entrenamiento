@@ -143,7 +143,7 @@
             <p class="text-xl text-slate-400 mt-2">Plan Progresivo para Movilidad y Fuerza Funcional</p>
         </header>
 
-        <div class="sticky top-4 z-40 bg-[#111827]/80 backdrop-blur-sm py-4 initial-hidden">
+        <div id="main-nav" class="sticky top-4 z-40 bg-[#111827]/80 backdrop-blur-sm py-4 initial-hidden">
             <div class="w-full bg-gray-700 rounded-full h-3 mb-4 shadow-inner">
                 <div id="progress-bar" class="bg-gradient-to-r from-amber-500 to-orange-600 h-3 rounded-full progress-bar-fill" style="width: 33.33%"></div>
             </div>
@@ -160,7 +160,7 @@
         <section id="progress-section" class="mt-12 initial-hidden">
              <div class="bg-gray-800/50 p-6 rounded-2xl shadow-lg border border-gray-700">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-3xl font-bold text-slate-200">Mi Centro de Mando</h2>
+                    <h2 class="text-3xl font-bold text-slate-200">Planificador</h2>
                     <label for="view-toggle" class="flex items-center cursor-pointer">
                         <span id="view-label-left" class="mr-3 text-sm font-medium">Progreso</span>
                         <div class="relative">
@@ -1083,7 +1083,7 @@ const planData = {
 
     // --- CARGA INICIAL ---
     loadProgress();
-    renderCalendars(true);
+    renderCalendars(false); // No hacer scroll en la carga inicial
     updateAnalytics();
     
     document.querySelectorAll('header, .sticky, #progress-section').forEach((el, index) => {
@@ -1092,6 +1092,20 @@ const planData = {
             el.classList.add('fade-in');
         }, 100 * (index + 1));
     });
+
+    // Vigilante para centrar el calendario solo cuando se hace visible
+    const progressSection = document.getElementById('progress-section');
+    const calendarObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                renderCalendars(true); // Activa el smart scroll
+                observer.unobserve(entry.target); // Se ejecuta solo una vez
+            }
+        });
+    }, { threshold: 0.1 }); // Se activa cuando el 10% del elemento es visible
+
+    calendarObserver.observe(progressSection);
+
 
     planContent.addEventListener('click', e => {
         const cardTarget = e.target.closest('.exercise-card');
