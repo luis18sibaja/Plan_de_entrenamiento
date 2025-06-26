@@ -26,6 +26,17 @@
             background-color: transparent; 
             color: #d1d5db; 
         }
+        .day-btn {
+            background-color: #374151;
+            color: #e5e7eb;
+            transition: all 0.3s ease-in-out;
+        }
+        .day-btn.active {
+            background-color: #fb923c;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(251, 146, 60, 0.4);
+        }
         .accordion-item {
             background-color: rgba(31, 41, 55, 0.5);
             backdrop-filter: blur(12px);
@@ -519,6 +530,7 @@ const planData = {
     function renderPlan(month) {
         const monthData = planData.months[month];
         planContent.innerHTML = `
+            <div id="days-nav" class="flex justify-center gap-2 md:gap-4 mb-8"></div>
             <div id="workout-details"></div>
             <div id="chart-section" class="mt-12 accordion-item rounded-xl shadow-lg p-6">
                 <h3 class="text-2xl font-bold text-center mb-4 text-slate-100">Distribución de la Sesión - Mes ${month}</h3>
@@ -529,7 +541,23 @@ const planData = {
             </div>
         `;
 
-        renderDay(month, 'day1');
+        const daysNav = document.getElementById('days-nav');
+        daysNav.innerHTML = '';
+        Object.keys(monthData.days).forEach((dayKey, index) => {
+            const dayBtn = document.createElement('button');
+            dayBtn.className = 'day-btn py-2 px-5 rounded-full font-semibold shadow-lg transition-all duration-300 transform hover:scale-105';
+            dayBtn.textContent = `Día ${index + 1}`;
+            dayBtn.dataset.day = dayKey;
+            dayBtn.dataset.month = month;
+            daysNav.appendChild(dayBtn);
+        });
+
+        // Simula un clic en el primer botón de día para mostrarlo por defecto
+        const firstDayButton = daysNav.querySelector('.day-btn');
+        if (firstDayButton) {
+            firstDayButton.classList.add('active');
+            renderDay(firstDayButton.dataset.month, firstDayButton.dataset.day);
+        }
         
         if (currentChart) {
             currentChart.destroy();
@@ -700,7 +728,7 @@ const planData = {
                  <h4 id="planning-view-header" class="text-lg font-bold text-center text-amber-400"></h4>
                  <button id="next-block-btn" class="p-2 rounded-full hover:bg-gray-700 transition-colors">3 Meses &gt;</button>
             </div>
-            <div id="planning-grid-container" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+            <div id="planning-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
             <div id="plan-end-date-info" class="text-center text-slate-400 text-sm mt-4 h-5 flex justify-center items-center gap-4"></div>
         `;
 
@@ -773,7 +801,7 @@ const planData = {
         if (planStartDate) {
             const rangeEndDate = new Date(planStartDate);
             rangeEndDate.setDate(rangeEndDate.getDate() + 83);
-            infoContainer.innerHTML = `<span>Fin de tu plan 12 semanas: ${rangeEndDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.</span> <button id="reset-start-date" class="text-xs bg-yellow-800/80 text-yellow-300 px-2 py-1 rounded-md hover:bg-yellow-700 ml-2">Resetear Inicio</button>`;
+            infoContainer.innerHTML = `<span>Tu plan de 12 semanas termina el ${rangeEndDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.</span> <button id="reset-start-date" class="text-xs bg-yellow-800/80 text-yellow-300 px-2 py-1 rounded-md hover:bg-yellow-700 ml-2">Resetear Inicio</button>`;
         } else {
             infoContainer.textContent = 'Haz clic en un día para establecer el inicio de tu plan de 12 semanas.';
         }
@@ -1107,12 +1135,21 @@ const planData = {
 
     planContent.addEventListener('click', e => {
         const cardTarget = e.target.closest('.exercise-card');
+        const dayTarget = e.target.closest('.day-btn');
+
         if(cardTarget){
             const exerciseName = cardTarget.dataset.exerciseName;
             const allExercises = [...planData.warmups[1],...planData.warmups[2],...planData.warmups[3], ...planData.cooldowns[1],...planData.cooldowns[2],...planData.cooldowns[3]];
             Object.values(planData.months).forEach(m => Object.values(m.days).forEach(d => allExercises.push(...d.exercises)));
             const exercise = allExercises.find(ex => ex.name === exerciseName);
             showModal(exercise);
+        } else if (dayTarget) {
+            const month = dayTarget.dataset.month;
+            const day = dayTarget.dataset.day;
+            renderDay(month, day);
+
+            document.querySelectorAll('#days-nav .day-btn').forEach(btn => btn.classList.remove('active'));
+            dayTarget.classList.add('active');
         }
     });
 
