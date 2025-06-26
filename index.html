@@ -31,21 +31,44 @@
             color: #e5e7eb;
             transition: all 0.3s ease-in-out;
         }
-        .day-btn.active {
-            background-color: #fb923c;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(251, 146, 60, 0.4);
-        }
         .accordion-item {
             background-color: rgba(31, 41, 55, 0.5);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: box-shadow 0.3s ease-in-out;
+            transition: box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out;
         }
         .accordion-item.illuminated {
             box-shadow: 0 0 25px rgba(251, 146, 60, 0.3), inset 0 0 10px rgba(251, 146, 60, 0.1);
         }
+        
+        /* --- Sistema de Temas de Color --- */
+        .day-btn.active { color: white; transform: translateY(-2px); }
+
+        /* Tema Día 1: Naranja Intenso */
+        .theme-day1 .day-btn.active { background-color: #f97316; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); }
+        .theme-day1 .accordion-header .theme-marker, .theme-day1 .accordion-icon { color: #f97316; }
+        .theme-day1 .exercise-card .theme-arrow { color: #f97316; }
+        .completed.theme-day1 { background-color: #f97316; box-shadow: 0 0 15px rgba(249, 115, 22, 0.5); }
+        .scheduled.theme-day1::after { background-color: #f97316; }
+        .assign-btn-day1:hover { background-color: #f97316 !important; }
+        
+        /* Tema Día 2: Ámbar Energético */
+        .theme-day2 .day-btn.active { background-color: #f59e0b; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); }
+        .theme-day2 .accordion-header .theme-marker, .theme-day2 .accordion-icon { color: #f59e0b; }
+        .theme-day2 .exercise-card .theme-arrow { color: #f59e0b; }
+        .completed.theme-day2 { background-color: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+        .scheduled.theme-day2::after { background-color: #f59e0b; }
+        .assign-btn-day2:hover { background-color: #f59e0b !important; }
+
+        /* Tema Día 3: Rojo Potencia */
+        .theme-day3 .day-btn.active { background-color: #ef4444; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+        .theme-day3 .accordion-header .theme-marker, .theme-day3 .accordion-icon { color: #ef4444; }
+        .theme-day3 .exercise-card .theme-arrow { color: #ef4444; }
+        .completed.theme-day3 { background-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+        .scheduled.theme-day3::after { background-color: #ef4444; }
+        .assign-btn-day3:hover { background-color: #ef4444 !important; }
+        /* --- Fin del Sistema de Temas de Color --- */
+
         .accordion-content {
             max-height: 0;
             overflow: hidden;
@@ -116,7 +139,7 @@
         .timeline-day { flex: 0 0 60px; padding: 0.75rem 0.25rem; }
         .grid-day { aspect-ratio: 1/1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2px; }
         .timeline-day:hover, .grid-day:hover:not(.out-of-range) { background-color: #4b5563; }
-        .timeline-day.scheduled::after, .grid-day.scheduled::after {
+        .scheduled::after {
             content: '';
             position: absolute;
             bottom: 6px;
@@ -125,15 +148,12 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background-color: #facc15;
         }
-        .timeline-day.completed, .grid-day.completed {
-            background-color: #f97316;
+        .completed {
             color: white;
             font-weight: bold;
-            box-shadow: 0 0 15px rgba(249, 115, 22, 0.5);
         }
-        .timeline-day.completed::after, .grid-day.completed::after { display: none; }
+        .completed::after { display: none !important; }
         .timeline-day.today, .grid-day.today { border: 2px solid #fb923c; }
         .grid-day.other-month { color: #4b5563; background-color: #1f2937; cursor: default; }
         .grid-day.in-range { background-color: rgba(55, 65, 81, 0.5); }
@@ -292,21 +312,21 @@ const planData = {
             title: "Mes 1: Adaptación y Técnica",
             interval: "40s trabajo / 20s descanso", rounds: "3-4", hiit_duration: 20,
             days: {
-                "day1": { title: "Día 1: Empuje y Core", exercises: [
+                "day1": { title: "Día 1: Empuje y Core", theme: "day1", exercises: [
                     { name: "Sentadilla (Peso Corporal)", desc: "Espalda recta, baja la cadera como si te sentaras.", img: "https://i.imgur.com/sC3g01M.gif", category: "Fuerza" },
                     { name: "Flexiones Inclinadas", desc: "Manos en un banco o pared. A menor inclinación, mayor dificultad.", img: "https://i.imgur.com/k1xPbzH.gif", category: "Fuerza" },
                     { name: "Plancha Frontal", desc: "Cuerpo en línea recta de talones a cabeza.", img: "https://i.imgur.com/oef7j2C.gif", category: "Core" },
                     { name: "Remo con Toalla", desc: "Sentado, pasa una toalla por tus pies y tira de ella, retrayendo las escápulas.", img: "https://i.imgur.com/AWhh3ng.gif", category: "Fuerza" },
                     { name: "Puente de Glúteos", desc: "Eleva la cadera contrayendo los glúteos.", img: "https://i.imgur.com/3flvDzt.gif", category: "Fuerza" }
                 ]},
-                "day2": { title: "Día 2: Tracción y Resistencia", exercises: [
+                "day2": { title: "Día 2: Tracción y Resistencia", theme: "day2", exercises: [
                     { name: "Zancadas Alternas", desc: "Da un paso largo y baja la rodilla de atrás casi hasta el suelo.", img: "https://i.imgur.com/V7aQ3er.gif", category: "Fuerza" },
                     { name: "Dominadas Australianas", desc: "Con una barra baja o mesa resistente. Tira del pecho hacia la barra.", img: "https://i.imgur.com/yD9j2rZ.gif", category: "Fuerza" },
                     { name: "Escaladores (Controlados)", desc: "En posición de plancha, lleva las rodillas al pecho lentamente.", img: "https://i.imgur.com/C7nByo5.gif", category: "Core" },
                     { name: "Peso Muerto Rumano (sin peso)", desc: "Concéntrate en la bisagra de cadera, espalda recta.", img: "https://i.imgur.com/TkbIuCo.gif", category: "Movilidad" },
                     { name: "Plancha Lateral", reps: "20s por lado", desc: "Mantén el cuerpo en una línea recta lateral.", img: "https://i.imgur.com/R35Inw6.gif", category: "Core" }
                 ]},
-                "day3": { title: "Día 3: Full Body y Transferencia", exercises: [
+                "day3": { title: "Día 3: Full Body y Transferencia", theme: "day3", exercises: [
                     { name: "Levantamiento Turco (Parcial)", desc: "Practica solo hasta el paso de apoyarte en la mano y elevar la cadera.", img: "https://i.imgur.com/mJ9r2tU.gif", category: "Coordinación" },
                     { name: "Swing (con mochila)", desc: "Movimiento explosivo de cadera.", img: "https://i.imgur.com/LFRuL1d.gif", category: "Potencia" },
                     { name: "Caminata del Granjero", desc: "Coge peso en cada mano y camina con la espalda recta.", img: "https://i.imgur.com/yE7xW9k.gif", category: "Fuerza" },
@@ -319,21 +339,21 @@ const planData = {
             title: "Mes 2: Intensificación",
             interval: "45s trabajo / 15s descanso", rounds: "4", hiit_duration: 25,
             days: {
-                "day1": { title: "Día 1: Fuerza Unilateral", exercises: [
+                "day1": { title: "Día 1: Fuerza Unilateral", theme: "day1", exercises: [
                     { name: "Sentadilla Búlgara", desc: "Pie trasero elevado en una silla. Reta el equilibrio y la fuerza.", img: "https://i.imgur.com/M9y9rL6.gif", category: "Fuerza" },
                     { name: "Flexiones con Liberación de Manos", desc: "Baja hasta el suelo, levanta las manos brevemente y empuja explosivamente.", img: "https://i.imgur.com/tYV9L39.gif", category: "Potencia" },
                     { name: "Plancha con Alcance", desc: "En plancha, extiende un brazo hacia adelante sin rotar las caderas.", img: "https://i.imgur.com/PabA5CT.gif", category: "Core" },
                     { name: "Remo a una Mano (con mochila)", desc: "Inclínate con la espalda recta, apoya una mano en una silla y rema.", img: "https://i.imgur.com/3Jg9g20.gif", category: "Fuerza" },
                     { name: "Elevación de Cadera a una Pierna", desc: "Puente de glúteos, pero con una pierna extendida.", img: "https://i.imgur.com/sHjJzwy.gif", category: "Fuerza" }
                 ]},
-                "day2": { title: "Día 2: Resistencia y Core Avanzado", exercises: [
+                "day2": { title: "Día 2: Resistencia y Core Avanzado", theme: "day2", exercises: [
                     { name: "Zancada Inversa con Elevación", desc: "Da un paso atrás en una zancada y al volver, eleva la rodilla al pecho.", img: "https://i.imgur.com/1G2t82j.gif", category: "Coordinación" },
                     { name: "Flexiones en Pica", desc: "Desde una 'V' invertida, baja la cabeza hacia el suelo. Trabaja los hombros.", img: "https://i.imgur.com/eB3dGSA.gif", category: "Fuerza" },
                     { name: "Plancha Spiderman", desc: "En plancha, lleva la rodilla hacia el codo del mismo lado.", img: "https://i.imgur.com/B9OcyL3.gif", category: "Core" },
                     { name: "Buenos Días (sin peso)", desc: "De pie, manos en la nuca. Realiza una bisagra de cadera.", img: "https://i.imgur.com/0iSgUu1.gif", category: "Fuerza" },
                     { name: "Limpia Parabrisas (Tumbado)", desc: "Boca arriba, piernas a 90 grados. Déjalas caer de lado a lado.", img: "https://i.imgur.com/N7iVd9q.gif", category: "Core" }
                 ]},
-                "day3": { title: "Día 3: Potencia y Coordinación", exercises: [
+                "day3": { title: "Día 3: Potencia y Coordinación", theme: "day3", exercises: [
                     { name: "Sentadilla con Salto", desc: "Realiza una sentadilla y salta explosivamente. Aterriza suavemente.", img: "https://i.imgur.com/rGgXp2e.gif", category: "Potencia" },
                     { name: "Flexiones Declinadas", desc: "Pies elevados en una silla. Mayor énfasis en pecho superior y hombros.", img: "https://i.imgur.com/9C0D3J1.gif", category: "Fuerza" },
                     { name: "Burpee (sin flexión)", desc: "Baja a plancha, vuelve a ponerte de pie y estira los brazos.", img: "https://i.imgur.com/tH3aL5P.gif", category: "Potencia" },
@@ -346,21 +366,21 @@ const planData = {
             title: "Mes 3: Potencia y Flujo",
             interval: "50s trabajo / 10s descanso", rounds: "4-5", hiit_duration: 30,
             days: {
-                "day1": { title: "Día 1: Complejos de Fuerza", exercises: [
+                "day1": { title: "Día 1: Complejos de Fuerza", theme: "day1", exercises: [
                     { name: "Sentadilla Pistola (asistida)", desc: "Sujétate a una puerta y realiza una sentadilla a una pierna.", img: "https://i.imgur.com/L4DbDqs.gif", category: "Fuerza" },
                     { name: "Flexión Arquero", desc: "Desde una posición de flexión ancha, desplaza el peso hacia un lado.", img: "https://i.imgur.com/o0scH67.gif", category: "Fuerza" },
                     { name: "Plancha a Plancha Baja", desc: "Desde plancha de manos, baja a plancha de codos y vuelve a subir.", img: "https://i.imgur.com/zAUmE4a.gif", category: "Core" },
                     { name: "Remo Renegado (con garrafas)", desc: "En posición de plancha sobre garrafas, rema alternativamente.", img: "https://i.imgur.com/uNlq3sF.gif", category: "Fuerza" },
                     { name: "Elevación de Piernas (Tumbado)", desc: "Boca arriba, levanta las piernas rectas y bájalas lentamente.", img: "https://i.imgur.com/L3TYgko.gif", category: "Core" }
                 ]},
-                "day2": { title: "Día 2: Agilidad y Resistencia Total", exercises: [
+                "day2": { title: "Día 2: Agilidad y Resistencia Total", theme: "day2", exercises: [
                     { name: "Zancada con Salto", desc: "Desde una posición de zancada, salta y cambia las piernas en el aire.", img: "https://i.imgur.com/BvLvhM4.gif", category: "Potencia" },
                     { name: "Flexión Hindú", desc: "Desde pica, baja en un movimiento fluido hasta una cobra y vuelve.", img: "https://i.imgur.com/L79pY5M.gif", category: "Coordinación" },
                     { name: "Oso Gateando (Bear Crawl)", desc: "A gatas con las rodillas flotando, avanza coordinando brazo y pierna opuestos.", img: "https://i.imgur.com/gK9o9b0.gif", category: "Coordinación" },
                     { name: "Sentadilla Cosaca", desc: "Desde una postura amplia, desplaza el peso a un lado, bajando la cadera.", img: "https://i.imgur.com/mO2P2j1.gif", category: "Movilidad" },
                     { name: "Abdominales en V (V-Ups)", desc: "Tumbado, levanta simultáneamente torso y piernas para formar una 'V'.", img: "https://i.imgur.com/e5j2jYw.gif", category: "Core" }
                 ]},
-                "day3": { title: "Día 3: Reto de Calistenia", exercises: [
+                "day3": { title: "Día 3: Reto de Calistenia", theme: "day3", exercises: [
                     { name: "Paseo por la Pared (Wall Walk)", desc: "En plancha con los pies en la pared, camina con las manos hacia ella.", img: "https://i.imgur.com/wVbKQzP.gif", category: "Fuerza" },
                     { name: "Flexión a una Mano (negativa)", desc: "Baja lo más lento que puedas usando solo un brazo.", img: "https://i.imgur.com/S9s4F16.gif", category: "Fuerza" },
                     { name: "Plancha Superman", desc: "En plancha, extiende un brazo y la pierna opuesta.", img: "https://i.imgur.com/s6wJ7c3.gif", category: "Core" },
@@ -447,7 +467,7 @@ const planData = {
                 <h4 class="font-bold text-lg text-slate-100">${exercise.name}</h4>
                 ${exercise.reps ? `<p class="text-slate-400">${exercise.reps}</p>` : ''}
             </div>
-            <span class="text-orange-500 font-bold text-3xl transition-transform duration-300 group-hover:translate-x-1">&#8594;</span>
+            <span class="theme-arrow text-orange-500 font-bold text-3xl transition-transform duration-300 group-hover:translate-x-1">&#8594;</span>
         `;
         return card;
     }
@@ -467,8 +487,8 @@ const planData = {
             <div class="space-y-4">
                 <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
                     <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
-                        <span><span class="text-orange-400 mr-2 font-black">A</span> Calentamiento y Movilidad</span>
-                        <div class="accordion-icon text-orange-400 text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
+                        <span><span class="theme-marker font-black mr-2">A</span> Calentamiento y Movilidad</span>
+                        <div class="accordion-icon text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
                     </button>
                     <div class="accordion-content">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="warmup-container"></div>
@@ -476,8 +496,8 @@ const planData = {
                 </div>
                 <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
                     <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
-                        <span><span class="text-orange-400 mr-2 font-black">B</span> Circuito HIIT: ${dayData.title}</span>
-                          <div class="accordion-icon text-orange-400 text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
+                        <span><span class="theme-marker font-black mr-2">B</span> Circuito HIIT: ${dayData.title}</span>
+                          <div class="accordion-icon text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
                     </button>
                     <div class="accordion-content">
                           <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="hiit-container"></div>
@@ -485,8 +505,8 @@ const planData = {
                 </div>
                 <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
                     <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
-                        <span><span class="text-orange-400 mr-2 font-black">C</span> Enfriamiento y Estiramientos</span>
-                          <div class="accordion-icon text-orange-400 text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
+                        <span><span class="theme-marker font-black mr-2">C</span> Enfriamiento y Estiramientos</span>
+                          <div class="accordion-icon text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
                     </button>
                     <div class="accordion-content">
                           <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="cooldown-container"></div>
@@ -545,16 +565,17 @@ const planData = {
         daysNav.innerHTML = '';
         Object.keys(monthData.days).forEach((dayKey, index) => {
             const dayBtn = document.createElement('button');
-            dayBtn.className = 'day-btn py-2 px-5 rounded-full font-semibold shadow-lg transition-all duration-300 transform hover:scale-105';
+            dayBtn.className = `day-btn py-2 px-5 rounded-full font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 theme-${dayKey}`;
             dayBtn.textContent = `Día ${index + 1}`;
             dayBtn.dataset.day = dayKey;
             dayBtn.dataset.month = month;
             daysNav.appendChild(dayBtn);
         });
 
-        // Simula un clic en el primer botón de día para mostrarlo por defecto
         const firstDayButton = daysNav.querySelector('.day-btn');
         if (firstDayButton) {
+            planContent.classList.remove('theme-day1', 'theme-day2', 'theme-day3');
+            planContent.classList.add(`theme-${firstDayButton.dataset.day}`);
             firstDayButton.classList.add('active');
             renderDay(firstDayButton.dataset.month, firstDayButton.dataset.day);
         }
@@ -683,10 +704,11 @@ const planData = {
             }
 
             if (completedDays[dateStr]) {
+                 const theme = completedDays[dateStr].theme;
                  if(completedDays[dateStr].completed){
-                    dayEl.classList.add('completed');
+                    dayEl.classList.add('completed', `theme-${theme}`);
                  } else {
-                    dayEl.classList.add('scheduled', completedDays[dateStr].workout);
+                    dayEl.classList.add('scheduled', `theme-${theme}`);
                  }
             }
             if(day.toDateString() === new Date().toDateString()){
@@ -728,8 +750,8 @@ const planData = {
                  <h4 id="planning-view-header" class="text-lg font-bold text-center text-amber-400"></h4>
                  <button id="next-block-btn" class="p-2 rounded-full hover:bg-gray-700 transition-colors">3 Meses &gt;</button>
             </div>
-            <div id="planning-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-            <div id="plan-end-date-info" class="text-center text-slate-400 text-sm mt-4 h-5 flex justify-center items-center gap-4"></div>
+            <div id="planning-grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+            <div id="plan-end-date-info" class="text-center text-slate-400 text-sm mt-4 h-5 flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4"></div>
         `;
 
         const planningGridContainer = document.getElementById('planning-grid-container');
@@ -768,8 +790,9 @@ const planData = {
                 dayEl.dataset.date = dateStr;
 
                 if (completedDays[dateStr]) {
-                    if (completedDays[dateStr].completed) dayEl.classList.add('completed');
-                    else dayEl.classList.add('scheduled', completedDays[dateStr].workout);
+                    const theme = completedDays[dateStr].theme;
+                    if (completedDays[dateStr].completed) dayEl.classList.add('completed', `theme-${theme}`);
+                    else dayEl.classList.add('scheduled', `theme-${theme}`);
                 }
                 if (currentDate.toDateString() === new Date().toDateString()) dayEl.classList.add('today');
 
@@ -801,7 +824,7 @@ const planData = {
         if (planStartDate) {
             const rangeEndDate = new Date(planStartDate);
             rangeEndDate.setDate(rangeEndDate.getDate() + 83);
-            infoContainer.innerHTML = `<span>Tu plan de 12 semanas termina el ${rangeEndDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.</span> <button id="reset-start-date" class="text-xs bg-yellow-800/80 text-yellow-300 px-2 py-1 rounded-md hover:bg-yellow-700 ml-2">Resetear Inicio</button>`;
+            infoContainer.innerHTML = `<span>Tu plan termina el ${rangeEndDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}.</span> <button id="reset-start-date" class="text-xs bg-yellow-800/80 text-yellow-300 px-2 py-1 rounded-md hover:bg-yellow-700">Resetear Inicio</button>`;
         } else {
             infoContainer.textContent = 'Haz clic en un día para establecer el inicio de tu plan de 12 semanas.';
         }
@@ -922,13 +945,14 @@ const planData = {
                 }
                 Object.keys(monthWorkouts).forEach(dayKey => {
                     const optionBtn = document.createElement('button');
-                    optionBtn.className = 'w-full p-3 bg-gray-700 rounded-lg text-white font-semibold hover:bg-orange-600 transition-colors';
+                    optionBtn.className = 'w-full p-3 bg-gray-700 rounded-lg text-white font-semibold transition-colors';
+                    optionBtn.classList.add(`assign-btn-${dayKey}`);
                     optionBtn.textContent = `Programar: ${monthWorkouts[dayKey].title}`;
                     optionBtn.onclick = () => {
                         if (!localStorage.getItem('workoutStartDate')) {
                             localStorage.setItem('workoutStartDate', date);
                         }
-                        completedDays[date] = { workout: dayKey, completed: false, month: activeMonth };
+                        completedDays[date] = { workout: dayKey, completed: false, month: activeMonth, theme: planData.months[activeMonth].days[dayKey].theme };
                         saveProgress();
                         renderCalendars(false);
                         hideAssignmentModal();
@@ -978,13 +1002,14 @@ const planData = {
             }
             Object.keys(monthWorkouts).forEach(dayKey => {
                 const optionBtn = document.createElement('button');
-                optionBtn.className = 'w-full p-3 bg-gray-700 rounded-lg text-white font-semibold hover:bg-orange-600 transition-colors';
+                optionBtn.className = 'w-full p-3 bg-gray-700 rounded-lg text-white font-semibold transition-colors';
+                optionBtn.classList.add(`assign-btn-${dayKey}`);
                 optionBtn.textContent = `Programar: ${monthWorkouts[dayKey].title}`;
                 optionBtn.onclick = () => {
                     if (!localStorage.getItem('workoutStartDate')) {
                         localStorage.setItem('workoutStartDate', date);
                     }
-                    completedDays[date] = { workout: dayKey, completed: false, month: activeMonth };
+                    completedDays[date] = { workout: dayKey, completed: false, month: activeMonth, theme: planData.months[activeMonth].days[dayKey].theme };
                     saveProgress();
                     renderCalendars();
                     hideAssignmentModal();
@@ -1145,11 +1170,15 @@ const planData = {
             showModal(exercise);
         } else if (dayTarget) {
             const month = dayTarget.dataset.month;
-            const day = dayTarget.dataset.day;
-            renderDay(month, day);
-
+            const dayKey = dayTarget.dataset.day;
+            
+            // Aplica la clase de tema al contenedor principal
+            planContent.className = `theme-${dayKey} transition-opacity duration-500 mt-8`; 
+            
             document.querySelectorAll('#days-nav .day-btn').forEach(btn => btn.classList.remove('active'));
             dayTarget.classList.add('active');
+
+            renderDay(month, dayKey);
         }
     });
 
@@ -1159,5 +1188,3 @@ const planData = {
 </script>
 </body>
 </html>
-
-
