@@ -773,7 +773,7 @@ const planData = {
         if (planStartDate) {
             const rangeEndDate = new Date(planStartDate);
             rangeEndDate.setDate(rangeEndDate.getDate() + 83);
-            infoContainer.innerHTML = `<span>Tu plan de 12 semanas termina el ${rangeEndDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.</span> <button id="reset-start-date" class="text-xs bg-yellow-800/80 text-yellow-300 px-2 py-1 rounded-md hover:bg-yellow-700 ml-2">Resetear Inicio</button>`;
+            infoContainer.innerHTML = `<span>Fin de tu plan 12 semanas: ${rangeEndDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.</span> <button id="reset-start-date" class="text-xs bg-yellow-800/80 text-yellow-300 px-2 py-1 rounded-md hover:bg-yellow-700 ml-2">Resetear Inicio</button>`;
         } else {
             infoContainer.textContent = 'Haz clic en un día para establecer el inicio de tu plan de 12 semanas.';
         }
