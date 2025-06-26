@@ -5,17 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plan de Entrenamiento Progresivo: 3 Meses</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Sophisticated Teal & Stone -->
+    <!-- Chosen Palette: Fuego y Ceniza -->
     <!-- Application Structure Plan: A 3-month progressive plan deserves a more robust structure. I've designed a tab-based navigation for Months 1, 2, and 3. Each month reveals its own weekly plan (3 workout days). This tiered structure organizes a large amount of information intuitively. Day selection reveals the specific workout, now presented in an accordion format (Warm-up, HIIT, Cooldown) to keep the UI clean. This allows the user to focus on one section at a time. I've added smooth transitions and a 'progress bar' for visual feedback on month completion. -->
     <!-- Visualization & Content Choices: Report Info: 3-month progressive exercises -> Goal: Guide user through a long-term plan -> Viz: Tabbed layout for months, accordion for daily sections -> Interaction: Click to switch months/expand sections. Justification: Manages complexity and provides a clear sense of progression. Report Info: Increased exercise complexity -> Goal: Teach more advanced movements -> Viz: High-quality GIFs in modals -> Interaction: Click-to-view. Justification: On-demand visual instruction is crucial for safety and efficacy. Report Info: Overall progress -> Goal: Motivate the user -> Viz: A simple visual progress bar for months -> Interaction: Updates on tab-click. Justification: Reinforces commitment and visualizes the journey. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
-        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
-        .tab-active { background-color: #0d9488; color: white; box-shadow: 0 4px 14px 0 rgba(13, 148, 136, 0.39); }
-        .tab-inactive { background-color: transparent; color: #4b5563; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            scroll-behavior: smooth; 
+            background-color: #111827; 
+            color: #e5e7eb;
+        }
+        .tab-active { 
+            background-color: #f97316; 
+            color: white; 
+            box-shadow: 0 5px 20px rgba(249, 115, 22, 0.4);
+        }
+        .tab-inactive { 
+            background-color: transparent; 
+            color: #d1d5db; 
+        }
+        .accordion-item {
+            background-color: rgba(31, 41, 55, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        .accordion-item.illuminated {
+            box-shadow: 0 0 25px rgba(251, 146, 60, 0.3), inset 0 0 10px rgba(251, 146, 60, 0.1);
+        }
         .accordion-content {
             max-height: 0;
             overflow: hidden;
@@ -23,14 +45,18 @@
             padding: 0 1.5rem;
         }
         .accordion-content.open {
-            max-height: 2000px; /* Sufficiently large value */
+            max-height: 2000px;
             padding: 1.5rem;
         }
+        .day-btn {
+            background-color: #374151;
+            color: #e5e7eb;
+        }
         .day-btn.active {
-            background-color: #14b8a6;
+            background-color: #fb923c;
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(20, 184, 166, 0.4);
+            box-shadow: 0 6px 12px rgba(251, 146, 60, 0.4);
         }
         .modal-backdrop { transition: opacity 0.3s ease-in-out; }
         .modal-content { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease-in-out; }
@@ -65,28 +91,33 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .accordion-icon {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
     </style>
 </head>
-<body class="bg-stone-50 text-stone-800 antialiased">
+<body class="antialiased">
 
     <div id="app" class="max-w-7xl mx-auto p-4 md:p-8">
 
         <header class="text-center mb-10 initial-hidden">
-            <h1 class="text-5xl font-extrabold text-teal-800 tracking-tight">Tu Viaje de 3 Meses</h1>
-            <p class="text-xl text-stone-600 mt-2">Plan Progresivo para Movilidad y Fuerza Funcional</p>
+            <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 tracking-tight">Tu Viaje de 3 Meses</h1>
+            <p class="text-xl text-slate-400 mt-2">Plan Progresivo para Movilidad y Fuerza Funcional</p>
         </header>
 
-        <div class="bg-amber-100 border-l-4 border-amber-500 text-amber-800 p-4 rounded-xl shadow-lg mb-10 initial-hidden" role="alert">
-            <p class="font-bold">⚠️ Un Recordatorio de tu Entrenador</p>
-            <p class="text-sm">Recuerda que este es un plan progresivo. La consistencia es más importante que la intensidad. Antes de avanzar a un nuevo mes, asegúrate de dominar la fase actual. Consulta siempre a tu médico ante cualquier duda.</p>
-        </div>
-
-        <div class="sticky top-4 z-40 bg-stone-100/80 backdrop-blur-sm py-4 initial-hidden">
-            <div class="w-full bg-stone-200 rounded-full h-3 mb-4 shadow-inner">
-                <div id="progress-bar" class="bg-gradient-to-r from-teal-500 to-cyan-500 h-3 rounded-full progress-bar-fill" style="width: 33.33%"></div>
+        <div class="sticky top-4 z-40 bg-[#111827]/80 backdrop-blur-sm py-4 initial-hidden">
+            <div class="w-full bg-gray-700 rounded-full h-3 mb-4 shadow-inner">
+                <div id="progress-bar" class="bg-gradient-to-r from-amber-500 to-orange-600 h-3 rounded-full progress-bar-fill" style="width: 33.33%"></div>
             </div>
 
-            <nav class="flex justify-center p-1 bg-stone-200 rounded-full shadow-md">
+            <nav class="flex justify-center p-1 bg-gray-800/80 rounded-full shadow-lg">
                 <button data-month="1" class="month-tab flex-1 py-3 px-2 text-center font-bold text-lg transition-all duration-300 rounded-full tab-active">Mes 1: Adaptación</button>
                 <button data-month="2" class="month-tab flex-1 py-3 px-2 text-center font-bold text-lg transition-all duration-300 rounded-full tab-inactive">Mes 2: Intensificación</button>
                 <button data-month="3" class="month-tab flex-1 py-3 px-2 text-center font-bold text-lg transition-all duration-300 rounded-full tab-inactive">Mes 3: Potencia</button>
@@ -98,10 +129,10 @@
 
     </div>
 
-    <div id="exercise-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-        <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+    <div id="exercise-modal" class="modal-backdrop fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+        <div class="modal-content bg-[#1f2937] border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div class="p-2 text-right">
-                 <button id="modal-close" class="text-stone-400 hover:text-red-500 transition-colors text-5xl leading-none">&times;</button>
+                 <button id="modal-close" class="text-slate-400 hover:text-red-500 transition-colors text-5xl leading-none">&times;</button>
             </div>
             <div class="p-6 pt-0 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                 <div>
@@ -109,9 +140,9 @@
                 </div>
                 <div class="flex flex-col h-full">
                     <div id="modal-tags" class="mb-3"></div>
-                    <h3 id="modal-title" class="text-4xl font-extrabold text-teal-800 mb-2"></h3>
-                    <div class="w-16 h-1.5 bg-teal-500 rounded-full mb-4"></div>
-                    <p id="modal-desc" class="text-stone-700 leading-relaxed overflow-y-auto"></p>
+                    <h3 id="modal-title" class="text-4xl font-extrabold text-white mb-2"></h3>
+                    <div class="w-16 h-1.5 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full mb-4"></div>
+                    <p id="modal-desc" class="text-slate-300 leading-relaxed overflow-y-auto"></p>
                 </div>
             </div>
         </div>
@@ -135,6 +166,7 @@ const planData = {
             title: "Mes 1: Adaptación y Técnica",
             interval: "40s trabajo / 20s descanso",
             rounds: "3-4",
+            hiit_duration: 20,
             days: {
                 "1": { title: "Día 1: Empuje y Core", exercises: [
                     { name: "Sentadilla (Peso Corporal)", desc: "Espalda recta, baja la cadera como si te sentaras. Mantén el pecho erguido. Un pilar fundamental para la fuerza del tren inferior.", img: "https://i.imgur.com/sC3g01M.gif", category: "Fuerza" },
@@ -163,6 +195,7 @@ const planData = {
             title: "Mes 2: Intensificación",
             interval: "45s trabajo / 15s descanso",
             rounds: "4",
+            hiit_duration: 25,
             days: {
                 "1": { title: "Día 1: Fuerza Unilateral", exercises: [
                     { name: "Sentadilla Búlgara", desc: "Pie trasero elevado en una silla. Baja hasta que el muslo delantero esté paralelo al suelo. Reta el equilibrio y la fuerza de cada pierna.", img: "https://i.imgur.com/M9y9rL6.gif", category: "Fuerza" },
@@ -191,6 +224,7 @@ const planData = {
             title: "Mes 3: Potencia y Flujo",
             interval: "50s trabajo / 10s descanso",
             rounds: "4-5",
+            hiit_duration: 30,
             days: {
                 "1": { title: "Día 1: Complejos de Fuerza", exercises: [
                     { name: "Sentadilla Pistola (asistida)", desc: "Sujétate al marco de una puerta o una silla y realiza una sentadilla a una pierna. La máxima expresión de fuerza y equilibrio unilateral.", img: "https://i.imgur.com/L4DbDqs.gif", category: "Fuerza" },
@@ -228,14 +262,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalDesc = document.getElementById('modal-desc');
     const modalClose = document.getElementById('modal-close');
     const modalTags = document.getElementById('modal-tags');
+    let currentChart = null;
     
     const categoryColors = {
-        "Fuerza": "bg-sky-100 text-sky-800",
-        "Core": "bg-amber-100 text-amber-800",
-        "Movilidad": "bg-green-100 text-green-800",
-        "Potencia": "bg-red-100 text-red-800",
-        "Coordinación": "bg-indigo-100 text-indigo-800",
-        "Flexibilidad": "bg-pink-100 text-pink-800"
+        "Fuerza": "bg-orange-200/20 text-orange-400",
+        "Core": "bg-yellow-200/20 text-yellow-400",
+        "Movilidad": "bg-green-200/20 text-green-400",
+        "Potencia": "bg-red-200/20 text-red-400",
+        "Coordinación": "bg-sky-200/20 text-sky-400",
+        "Flexibilidad": "bg-purple-200/20 text-purple-400"
     };
 
     function showModal(exercise) {
@@ -248,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (exercise.category) {
             const tag = document.createElement('span');
             tag.textContent = exercise.category;
-            tag.className = `category-tag ${categoryColors[exercise.category] || 'bg-stone-100 text-stone-800'}`;
+            tag.className = `category-tag ${categoryColors[exercise.category] || 'bg-slate-100 text-slate-800'}`;
             modalTags.appendChild(tag);
         }
 
@@ -272,20 +307,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createExerciseCard(exercise) {
         const card = document.createElement('div');
-        card.className = 'bg-white p-3 rounded-xl shadow-md flex items-center gap-4 cursor-pointer hover:shadow-xl hover:ring-2 hover:ring-teal-400 transition-all duration-300 transform hover:-translate-y-1 group';
+        card.className = 'exercise-card bg-gray-800/50 p-3 rounded-xl shadow-lg flex items-center gap-4 cursor-pointer hover:shadow-2xl hover:ring-2 hover:ring-orange-500 transition-all duration-300 transform hover:-translate-y-1 group';
+        card.dataset.exerciseName = exercise.name;
         card.innerHTML = `
-            <img src="${exercise.img}" alt="${exercise.name}" class="w-24 h-24 object-cover rounded-lg bg-stone-200 flex-shrink-0" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/100x100/e2e8f0/4a5568?text=Img';">
+            <img src="${exercise.img}" alt="${exercise.name}" class="w-24 h-24 object-cover rounded-lg bg-slate-700 flex-shrink-0" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/100x100/e2e8f0/4a5568?text=Img';">
             <div class="flex-grow">
-                <h4 class="font-bold text-lg text-teal-800">${exercise.name}</h4>
-                ${exercise.reps ? `<p class="text-stone-600">${exercise.reps}</p>` : ''}
-                <p class="text-stone-600 text-sm mt-1 hidden md:block">${exercise.desc.substring(0, 50)}...</p>
+                <h4 class="font-bold text-lg text-slate-100">${exercise.name}</h4>
+                ${exercise.reps ? `<p class="text-slate-400">${exercise.reps}</p>` : ''}
             </div>
-            <span class="text-teal-500 font-bold text-3xl transition-transform duration-300 group-hover:translate-x-1">&#8594;</span>
+            <span class="text-orange-500 font-bold text-3xl transition-transform duration-300 group-hover:translate-x-1">&#8594;</span>
         `;
-        card.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showModal(exercise);
-        });
         return card;
     }
     
@@ -295,28 +326,28 @@ document.addEventListener('DOMContentLoaded', () => {
         
         workoutDetails.innerHTML = `
             <div class="space-y-4">
-                <div class="accordion-item bg-white rounded-xl shadow-lg overflow-hidden">
-                    <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-teal-900">
-                        <span><span class="text-teal-500 mr-2">A</span> Calentamiento y Movilidad</span>
-                        <span class="accordion-icon transform transition-transform duration-300 text-teal-500 text-2xl">+</span>
+                <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
+                    <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
+                        <span><span class="text-orange-400 mr-2 font-black">A</span> Calentamiento y Movilidad</span>
+                        <div class="accordion-icon text-orange-400 text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
                     </button>
                     <div class="accordion-content">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="warmup-container"></div>
                     </div>
                 </div>
-                <div class="accordion-item bg-white rounded-xl shadow-lg overflow-hidden">
-                    <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-teal-900">
-                        <span><span class="text-teal-500 mr-2">B</span> Circuito HIIT: ${dayData.title}</span>
-                         <span class="accordion-icon transform transition-transform duration-300 text-teal-500 text-2xl">+</span>
+                <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
+                    <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
+                        <span><span class="text-orange-400 mr-2 font-black">B</span> Circuito HIIT: ${dayData.title}</span>
+                         <div class="accordion-icon text-orange-400 text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
                     </button>
                     <div class="accordion-content">
                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="hiit-container"></div>
                     </div>
                 </div>
-                <div class="accordion-item bg-white rounded-xl shadow-lg overflow-hidden">
-                    <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-teal-900">
-                        <span><span class="text-teal-500 mr-2">C</span> Enfriamiento y Estiramientos</span>
-                         <span class="accordion-icon transform transition-transform duration-300 text-teal-500 text-2xl">+</span>
+                <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
+                    <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
+                        <span><span class="text-orange-400 mr-2 font-black">C</span> Enfriamiento y Estiramientos</span>
+                         <div class="accordion-icon text-orange-400 text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
                     </button>
                     <div class="accordion-content">
                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="cooldown-container"></div>
@@ -336,19 +367,23 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.querySelectorAll('.accordion-header').forEach(header => {
             header.addEventListener('click', () => {
+                const item = header.parentElement;
                 const content = header.nextElementSibling;
-                const icon = header.querySelector('.accordion-icon');
+                const icon = header.querySelector('.accordion-icon div:last-child');
                 const isOpen = content.classList.contains('open');
 
                 document.querySelectorAll('.accordion-content.open').forEach(openContent => {
                     if (openContent !== content) {
                         openContent.classList.remove('open');
-                        openContent.previousElementSibling.querySelector('.accordion-icon').textContent = '+';
+                        const openItem = openContent.parentElement;
+                        openItem.classList.remove('illuminated');
+                        openItem.querySelector('.accordion-icon div:last-child').style.transform = 'rotate(90deg)';
                     }
                 });
                 
                 content.classList.toggle('open');
-                icon.textContent = content.classList.contains('open') ? '−' : '+';
+                item.classList.toggle('illuminated');
+                icon.style.transform = content.classList.contains('open') ? 'rotate(0deg)' : 'rotate(90deg)';
             });
         });
     }
@@ -361,11 +396,18 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             planContent.innerHTML = `
                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-stone-800">${monthData.title}</h2>
-                    <p class="text-md text-stone-600 mt-1"><strong>Intervalo:</strong> ${monthData.interval} | <strong>Rondas:</strong> ${monthData.rounds}</p>
+                    <h2 class="text-3xl font-bold text-slate-200">${monthData.title}</h2>
+                    <p class="text-md text-slate-400 mt-1"><strong>Intervalo:</strong> ${monthData.interval} | <strong>Rondas:</strong> ${monthData.rounds}</p>
                 </div>
                 <div id="days-nav" class="flex justify-center gap-2 md:gap-4 mb-8"></div>
                 <div id="workout-details"></div>
+                <div id="chart-section" class="mt-12 accordion-item rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold text-center mb-4 text-slate-100">Distribución de la Sesión</h3>
+                    <div class="chart-container">
+                        <canvas id="session-chart"></canvas>
+                    </div>
+                    <div id="chart-legend" class="mt-4 flex justify-center gap-4 text-sm flex-wrap text-slate-300"></div>
+                </div>
             `;
 
             const daysNav = document.getElementById('days-nav');
@@ -378,17 +420,88 @@ document.addEventListener('DOMContentLoaded', () => {
                 daysNav.appendChild(dayBtn);
             });
             
-            daysNav.addEventListener('click', e => {
-                const target = e.target.closest('.day-btn');
-                if(target){
-                    renderDay(target.dataset.month, target.dataset.day);
+            planContent.addEventListener('click', e => {
+                const dayTarget = e.target.closest('.day-btn');
+                if(dayTarget){
+                    renderDay(dayTarget.dataset.month, dayTarget.dataset.day);
                     document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
-                    target.classList.add('active');
+                    dayTarget.classList.add('active');
+                    return;
+                }
+
+                const cardTarget = e.target.closest('.exercise-card');
+                if(cardTarget){
+                    const exerciseName = cardTarget.dataset.exerciseName;
+                    const allExercises = [...planData.warmup, ...planData.cooldown];
+                    Object.values(planData.months).forEach(m => Object.values(m.days).forEach(d => allExercises.push(...d.exercises)));
+                    const exercise = allExercises.find(ex => ex.name === exerciseName);
+                    showModal(exercise);
                 }
             });
             
             daysNav.querySelector('.day-btn').click();
             planContent.classList.add('fade-in');
+
+            if (currentChart) {
+                currentChart.destroy();
+            }
+            const ctx = document.getElementById('session-chart').getContext('2d');
+            const legendContainer = document.getElementById('chart-legend');
+            legendContainer.innerHTML = ''; 
+            
+            const chartStructure = [
+                { label: 'Calentamiento', duration: 15, color: 'rgba(251, 146, 60, 0.7)' },
+                { label: 'HIIT', duration: monthData.hiit_duration, color: 'rgba(249, 115, 22, 0.9)' },
+                { label: 'Enfriamiento', duration: 10, color: 'rgba(234, 88, 12, 0.8)' }
+            ];
+
+            const chartData = {
+                labels: chartStructure.map(s => s.label),
+                datasets: [{
+                    data: chartStructure.map(s => s.duration),
+                    backgroundColor: chartStructure.map(s => s.color),
+                    borderColor: '#1f2937',
+                    borderWidth: 0,
+                    hoverOffset: 8,
+                    hoverBorderColor: '#fef3c7'
+                }]
+            };
+
+            currentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: '#1f2937',
+                            titleFont: { size: 16, weight: 'bold'},
+                            bodyFont: { size: 14, color: '#d1d5db' },
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: (context) => `${context.label}: ${context.raw} min (aprox.)`
+                            }
+                        }
+                    }
+                }
+            });
+
+            chartData.labels.forEach((label, index) => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'flex items-center';
+                legendItem.innerHTML = `
+                    <span class="w-3 h-3 rounded-full mr-2" style="background-color: ${chartData.datasets[0].backgroundColor[index]}"></span>
+                    <span>${label}</span>
+                `;
+                legendContainer.appendChild(legendItem);
+            });
+
+
         }, 300);
     }
 
