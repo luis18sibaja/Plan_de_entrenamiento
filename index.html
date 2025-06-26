@@ -9,10 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Fuego y Ceniza -->
-    <!-- Application Structure Plan: A 3-month progressive plan deserves a more robust structure. I've designed a tab-based navigation for Months 1, 2, and 3. Each month reveals its own weekly plan (3 workout days). This tiered structure organizes a large amount of information intuitively. Day selection reveals the specific workout, now presented in an accordion format (Warm-up, HIIT, Cooldown) to keep the UI clean. This allows the user to focus on one section at a time. I've added smooth transitions and a 'progress bar' for visual feedback on month completion. -->
-    <!-- Visualization & Content Choices: Report Info: 3-month progressive exercises -> Goal: Guide user through a long-term plan -> Viz: Tabbed layout for months, accordion for daily sections -> Interaction: Click to switch months/expand sections. Justification: Manages complexity and provides a clear sense of progression. Report Info: Increased exercise complexity -> Goal: Teach more advanced movements -> Viz: High-quality GIFs in modals -> Interaction: Click-to-view. Justification: On-demand visual instruction is crucial for safety and efficacy. Report Info: Overall progress -> Goal: Motivate the user -> Viz: A simple visual progress bar for months -> Interaction: Updates on tab-click. Justification: Reinforces commitment and visualizes the journey. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- Paleta de Colores: Fuego y Ceniza -->
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
@@ -62,6 +59,15 @@
         }
         .progress-bar-fill {
             transition: width 0.5s ease-in-out;
+        }
+        .initial-hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in {
+            opacity: 1;
+            transform: translateY(0);
         }
         .category-tag {
             display: inline-block;
@@ -132,12 +138,12 @@
 <body class="antialiased">
 
     <div id="app" class="max-w-7xl mx-auto p-4 md:p-8">
-        <header class="text-center mb-10">
+        <header class="text-center mb-10 initial-hidden">
             <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 tracking-tight">Tu Viaje de 3 Meses</h1>
             <p class="text-xl text-slate-400 mt-2">Plan Progresivo para Movilidad y Fuerza Funcional</p>
         </header>
 
-        <div class="sticky top-4 z-40 bg-[#111827]/80 backdrop-blur-sm py-4">
+        <div class="sticky top-4 z-40 bg-[#111827]/80 backdrop-blur-sm py-4 initial-hidden">
             <div class="w-full bg-gray-700 rounded-full h-3 mb-4 shadow-inner">
                 <div id="progress-bar" class="bg-gradient-to-r from-amber-500 to-orange-600 h-3 rounded-full progress-bar-fill" style="width: 33.33%"></div>
             </div>
@@ -151,7 +157,7 @@
         <main id="plan-content" class="transition-opacity duration-500 mt-8">
         </main>
         
-        <section id="progress-section" class="mt-12">
+        <section id="progress-section" class="mt-12 initial-hidden">
              <div class="bg-gray-800/50 p-6 rounded-2xl shadow-lg border border-gray-700">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-3xl font-bold text-slate-200">Mi Centro de Mando</h2>
@@ -181,15 +187,15 @@
                          <div class="bg-gray-900/50 p-4 rounded-xl">
                             <p class="text-sm text-slate-400">Cumplimiento Total</p>
                             <p id="total-compliance" class="text-3xl font-extrabold text-amber-400">0%</p>
-                         </div>
+                        </div>
                          <div class="bg-gray-900/50 p-4 rounded-xl">
                             <p class="text-sm text-slate-400">Racha de Semanas Perfectas</p>
                             <p id="perfect-streak" class="text-3xl font-extrabold text-orange-500">0</p>
-                         </div>
+                        </div>
                          <div class="bg-gray-900/50 p-4 rounded-xl">
                             <p class="text-sm text-slate-400">Entrenamientos Totales</p>
                             <p id="total-workouts" class="text-3xl font-extrabold text-white">0</p>
-                         </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -230,138 +236,134 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
+// --- DATOS DEL PLAN DE ENTRENAMIENTO ---
 const planData = {
     warmups: {
         "1": [
-            { name: "Respiración Diafragmática", desc: "Tumbado boca arriba, inhala profundo por la nariz (4s), siente cómo se expande tu abdomen, no el pecho. Sostén (2s) y exhala lentamente por la boca (6s). Esto calma el sistema nervioso y prepara tu core desde adentro. Repite por 2-3 minutos.", img: "https://i.imgur.com/v6mB4gC.gif", category: "Movilidad" },
-            { name: "Gato-Vaca", reps: "15 reps", desc: "A gatas, inhala mientras arqueas la espalda y miras al frente (Vaca). Exhala mientras redondeas la columna y metes la barbilla (Gato). Esencial para lubricar las vértebras y despertar la columna.", img: "https://i.imgur.com/sS4m3t4.gif", category: "Movilidad" },
-            { name: "Bird-Dog", reps: "10 reps x lado", desc: "A gatas, contrae el abdomen y extiende un brazo al frente y la pierna opuesta hacia atrás. Imagina que tienes una bandeja en la espalda y no puedes derramarla. Mantén 3 segundos. Mejora la estabilidad del core y la coordinación.", img: "https://i.imgur.com/Q2xY1VN.gif", category: "Core" },
-            { name: "Rotaciones Torácicas Cuadrúpedas", reps: "10 reps x lado", desc: "A gatas, una mano en la nuca. Rota el codo hacia el techo, abriendo el pecho. Es clave para la movilidad de la espalda alta, un área que a menudo acumula rigidez.", img: "https://i.imgur.com/jQ7D3Tz.gif", category: "Movilidad"}
+            { name: "Respiración Diafragmática", desc: "Tumbado boca arriba, inhala profundo por la nariz (4s), siente cómo se expande tu abdomen, no el pecho. Sostén (2s) y exhala lentamente por la boca (6s). Repite por 2-3 minutos.", img: "https://i.imgur.com/v6mB4gC.gif", category: "Movilidad" },
+            { name: "Gato-Vaca", reps: "15 reps", desc: "A gatas, inhala mientras arqueas la espalda y miras al frente (Vaca). Exhala mientras redondeas la columna y metes la barbilla (Gato).", img: "https://i.imgur.com/sS4m3t4.gif", category: "Movilidad" },
+            { name: "Bird-Dog", reps: "10 reps x lado", desc: "A gatas, contrae el abdomen y extiende un brazo al frente y la pierna opuesta hacia atrás. Mantén 3 segundos.", img: "https://i.imgur.com/Q2xY1VN.gif", category: "Core" },
+            { name: "Rotaciones Torácicas Cuadrúpedas", reps: "10 reps x lado", desc: "A gatas, una mano en la nuca. Rota el codo hacia el techo, abriendo el pecho.", img: "https://i.imgur.com/jQ7D3Tz.gif", category: "Movilidad"}
         ],
         "2": [
-            { name: "Círculos de Brazos y Piernas", reps: "10 por dirección", desc: "De pie, realiza círculos amplios y controlados con los brazos hacia adelante y atrás. Luego, apóyate en algo y haz lo mismo con cada pierna. Esto lubrica las articulaciones del hombro y la cadera.", img: "https://i.imgur.com/pMWF83v.gif", category: "Movilidad" },
-            { name: "Sentadilla Profunda con Rotación", reps: "8 reps x lado", desc: "Baja a una sentadilla profunda, lo más que puedas cómodamente. Apoya un codo en la parte interna de la rodilla y rota el otro brazo hacia el techo. Abre la cadera y la columna torácica simultáneamente.", img: "https://i.imgur.com/e32sgrz.gif", category: "Movilidad" },
-            { name: "Plancha con Pasos Laterales", reps: "20 pasos totales", desc: "En posición de plancha alta (manos), da pequeños pasos laterales con manos y pies, moviéndote como un cangrejo. Activa el core y los estabilizadores del hombro de forma dinámica.", img: "https://i.imgur.com/tH3aL5P.gif", category: "Core" },
-            { name: "Bisagra de Cadera (Good Morning)", reps: "15 reps", desc: "De pie, manos en la nuca, rodillas ligeramente flexionadas. Empuja la cadera hacia atrás como si quisieras cerrar una puerta, manteniendo la espalda recta. Activa toda la cadena posterior.", img: "https://i.imgur.com/0iSgUu1.gif", category: "Fuerza" }
+            { name: "Círculos de Brazos y Piernas", reps: "10 por dirección", desc: "De pie, realiza círculos amplios y controlados con los brazos y piernas.", img: "https://i.imgur.com/pMWF83v.gif", category: "Movilidad" },
+            { name: "Sentadilla Profunda con Rotación", reps: "8 reps x lado", desc: "Baja a una sentadilla profunda. Apoya un codo en la rodilla y rota el otro brazo hacia el techo.", img: "https://i.imgur.com/e32sgrz.gif", category: "Movilidad" },
+            { name: "Plancha con Pasos Laterales", reps: "20 pasos totales", desc: "En plancha alta, da pequeños pasos laterales con manos y pies.", img: "https://i.imgur.com/tH3aL5P.gif", category: "Core" },
+            { name: "Bisagra de Cadera (Good Morning)", reps: "15 reps", desc: "De pie, manos en la nuca, empuja la cadera hacia atrás manteniendo la espalda recta.", img: "https://i.imgur.com/0iSgUu1.gif", category: "Fuerza" }
         ],
         "3": [
-            { name: "Saltos de Tijera (Jumping Jacks)", reps: "30 segundos", desc: "Un clásico para elevar el ritmo cardíaco y calentar todo el cuerpo de forma coordinada. Mantén un ritmo constante.", img: "https://i.imgur.com/6aY4j2P.gif", category: "Potencia" },
-            { name: "Sentadilla a Zancada Inversa", reps: "8 reps x lado", desc: "Realiza una sentadilla, y al subir, lleva una pierna directamente hacia atrás a una zancada inversa. Fluye de un movimiento a otro. Prepara los patrones de movimiento del día.", img: "https://i.imgur.com/Y351gM4.gif", category: "Coordinación" },
-            { name: "Plancha a Perro Boca Abajo", reps: "12 reps", desc: "Desde una plancha alta, eleva la cadera hacia el techo formando una 'V' invertida (Perro Boca Abajo), estirando la espalda y los isquiotibiales. Vuelve a la plancha. Flujo dinámico.", img: "https://i.imgur.com/vLhSgP3.gif", category: "Movilidad" },
-            { name: "Paseo del Monstruo (con banda)", reps: "10 pasos x lado", desc: "Si tienes una minibanda, colócala arriba de las rodillas. En posición de media sentadilla, da pasos laterales manteniendo la tensión. Si no tienes banda, hazlo igual, activando los glúteos.", img: "https://i.imgur.com/R3C4dC7.gif", category: "Fuerza" }
+            { name: "Saltos de Tijera (Jumping Jacks)", reps: "30 segundos", desc: "Un clásico para elevar el ritmo cardíaco y calentar todo el cuerpo.", img: "https://i.imgur.com/6aY4j2P.gif", category: "Potencia" },
+            { name: "Sentadilla a Zancada Inversa", reps: "8 reps x lado", desc: "Realiza una sentadilla, y al subir, lleva una pierna directamente hacia atrás a una zancada.", img: "https://i.imgur.com/Y351gM4.gif", category: "Coordinación" },
+            { name: "Plancha a Perro Boca Abajo", reps: "12 reps", desc: "Desde plancha alta, eleva la cadera hacia el techo (Perro Boca Abajo) y vuelve.", img: "https://i.imgur.com/vLhSgP3.gif", category: "Movilidad" },
+            { name: "Paseo del Monstruo (con banda)", reps: "10 pasos x lado", desc: "Con minibanda en las rodillas, da pasos laterales en media sentadilla.", img: "https://i.imgur.com/R3C4dC7.gif", category: "Fuerza" }
         ]
     },
     cooldowns: {
         "1": [
-            { name: "Estiramiento de Isquiotibiales", reps: "45 seg x lado", desc: "Sentado, una pierna estirada, la otra flexionada con el pie en el muslo interno. Inclínate hacia adelante desde la cadera, manteniendo la espalda recta. No intentes tocar el pie, solo busca el estiramiento.", img: "https://i.imgur.com/S9s4F16.gif", category: "Flexibilidad" },
-            { name: "Estiramiento de Cuádriceps (de pie)", reps: "45 seg x lado", desc: "De pie, sujétate a algo si es necesario. Lleva el talón al glúteo, manteniendo las rodillas juntas. Siente el estiramiento en la parte frontal del muslo.", img: "https://i.imgur.com/pG8kH2G.gif", category: "Flexibilidad" },
-            { name: "Estiramiento del Gato (Postura del Niño)", reps: "60 seg", desc: "Desde la posición a gatas, lleva la cadera hacia los talones y extiende los brazos al frente, apoyando la frente en el suelo. Relaja toda la espalda.", img: "https://i.imgur.com/bT6g4jE.gif", category: "Flexibilidad" },
-            { name: "Torsión Espinal (tumbado)", reps: "45 seg x lado", desc: "Tumbado, lleva una rodilla al pecho y luego crúzala por encima del cuerpo, girando la cadera. Mantén ambos hombros en el suelo. Libera la tensión de la espalda baja.", img: "https://i.imgur.com/pMWF83v.gif", category: "Movilidad" }
+            { name: "Estiramiento de Isquiotibiales", reps: "45 seg x lado", desc: "Sentado, una pierna estirada, inclínate hacia adelante desde la cadera.", img: "https://i.imgur.com/S9s4F16.gif", category: "Flexibilidad" },
+            { name: "Estiramiento de Cuádriceps (de pie)", reps: "45 seg x lado", desc: "De pie, lleva el talón al glúteo, manteniendo las rodillas juntas.", img: "https://i.imgur.com/pG8kH2G.gif", category: "Flexibilidad" },
+            { name: "Postura del Niño", reps: "60 seg", desc: "Lleva la cadera hacia los talones y extiende los brazos al frente.", img: "https://i.imgur.com/bT6g4jE.gif", category: "Flexibilidad" },
+            { name: "Torsión Espinal (tumbado)", reps: "45 seg x lado", desc: "Tumbado, lleva una rodilla al pecho y luego crúzala por encima del cuerpo.", img: "https://i.imgur.com/pMWF83v.gif", category: "Movilidad" }
         ],
         "2": [
-            { name: "Estiramiento de la Paloma", reps: "60 seg x lado", desc: "Desde plancha, lleva una rodilla hacia la mano del mismo lado y estira la otra pierna hacia atrás. Un estiramiento profundo para el glúteo y el psoas. Si es muy intenso, haz la versión 'Figura 4' tumbado.", img: "https://i.imgur.com/0iSgUu1.gif", category: "Flexibilidad" },
-            { name: "Estiramiento de Aductores (Mariposa)", reps: "60 seg", desc: "Sentado, junta las plantas de los pies y acerca los talones al cuerpo. Presiona suavemente las rodillas hacia el suelo con los codos para estirar la parte interna de los muslos.", img: "https://i.imgur.com/R3C4dC7.gif", category: "Flexibilidad" },
-            { name: "Estiramiento de Hombro Cruzado", reps: "45 seg x brazo", desc: "Lleva un brazo recto a través del pecho y presiona suavemente con el otro brazo para estirar la parte posterior del hombro.", img: "https://i.imgur.com/qg9nIeC.gif", category: "Flexibilidad" },
-            { name: "Postura del Perro Boca Abajo", reps: "60 seg", desc: "Desde plancha, eleva la cadera al techo. Presiona los talones hacia el suelo (no importa si no tocan) y mantén la espalda larga. Estira toda la cadena posterior del cuerpo.", img: "https://i.imgur.com/vLhSgP3.gif", category: "Movilidad" }
+            { name: "Estiramiento de la Paloma", reps: "60 seg x lado", desc: "Estiramiento profundo para el glúteo y el psoas.", img: "https://i.imgur.com/0iSgUu1.gif", category: "Flexibilidad" },
+            { name: "Estiramiento de Aductores (Mariposa)", reps: "60 seg", desc: "Sentado, junta las plantas de los pies y presiona las rodillas hacia el suelo.", img: "https://i.imgur.com/R3C4dC7.gif", category: "Flexibilidad" },
+            { name: "Estiramiento de Hombro Cruzado", reps: "45 seg x brazo", desc: "Lleva un brazo recto a través del pecho y presiona suavemente con el otro.", img: "https://i.imgur.com/qg9nIeC.gif", category: "Flexibilidad" },
+            { name: "Postura del Perro Boca Abajo", reps: "60 seg", desc: "Desde plancha, eleva la cadera al techo. Estira toda la cadena posterior.", img: "https://i.imgur.com/vLhSgP3.gif", category: "Movilidad" }
         ],
         "3": [
-            { name: "Estiramiento del 'Couch Stretch'", reps: "60 seg x lado", desc: "Coloca una rodilla en la esquina de una pared y el pie en la pared. Adelanta la otra pierna. Es el estiramiento más intenso y efectivo para el cuádriceps y el psoas. Procede con cuidado.", img: "https://i.imgur.com/Y351gM4.gif", category: "Flexibilidad" },
-            { name: "Estiramiento de la Rana", reps: "60 seg", desc: "A gatas, separa las rodillas lo más que puedas cómodamente, con los pies hacia afuera. Baja la cadera hacia el suelo para un estiramiento profundo de aductores.", img: "https://i.imgur.com/9D6o9a8.gif", category: "Flexibilidad" },
-            { name: "Estiramiento de Tríceps sobre la Cabeza", reps: "45 seg x brazo", desc: "Levanta un brazo, flexiona el codo y deja caer la mano por detrás de la cabeza. Usa la otra mano para presionar suavemente el codo hacia abajo.", img: "https://i.imgur.com/k6J1s5T.gif", category: "Flexibilidad" },
-            { name: "Estiramiento de Muñecas y Antebrazos", reps: "30 seg cada posición", desc: "A gatas, apoya las palmas de las manos con los dedos apuntando hacia ti. Luego, apoya el dorso de las manos. crucial para la salud de las muñecas en calistenia.", img: "https://i.imgur.com/LFRuL1d.gif", category: "Movilidad" }
+            { name: "Estiramiento del 'Couch Stretch'", reps: "60 seg x lado", desc: "Coloca una rodilla en la esquina de una pared. El estiramiento más efectivo para cuádriceps y psoas.", img: "https://i.imgur.com/Y351gM4.gif", category: "Flexibilidad" },
+            { name: "Estiramiento de la Rana", reps: "60 seg", desc: "A gatas, separa las rodillas lo más que puedas para un estiramiento profundo de aductores.", img: "https://i.imgur.com/9D6o9a8.gif", category: "Flexibilidad" },
+            { name: "Estiramiento de Tríceps sobre la Cabeza", reps: "45 seg x brazo", desc: "Flexiona un codo por detrás de la cabeza y presiona suavemente con la otra mano.", img: "https://i.imgur.com/k6J1s5T.gif", category: "Flexibilidad" },
+            { name: "Estiramiento de Muñecas y Antebrazos", reps: "30 seg cada posición", desc: "A gatas, apoya las palmas y luego el dorso de las manos para estirar.", img: "https://i.imgur.com/LFRuL1d.gif", category: "Movilidad" }
         ]
     },
     months: {
         "1": {
             title: "Mes 1: Adaptación y Técnica",
-            interval: "40s trabajo / 20s descanso",
-            rounds: "3-4",
-            hiit_duration: 20,
+            interval: "40s trabajo / 20s descanso", rounds: "3-4", hiit_duration: 20,
             days: {
                 "day1": { title: "Día 1: Empuje y Core", exercises: [
-                    { name: "Sentadilla (Peso Corporal)", desc: "Espalda recta, baja la cadera como si te sentaras. Mantén el pecho erguido. Un pilar fundamental para la fuerza del tren inferior.", img: "https://i.imgur.com/sC3g01M.gif", category: "Fuerza" },
-                    { name: "Flexiones Inclinadas", desc: "Manos en un banco o pared. A menor inclinación, mayor dificultad. Cuerpo recto. Ideal para construir fuerza de empuje de forma progresiva.", img: "https://i.imgur.com/k1xPbzH.gif", category: "Fuerza" },
-                    { name: "Plancha Frontal", desc: "Cuerpo en línea recta de talones a cabeza. Contrae abdomen y glúteos para máxima efectividad. El rey de la estabilidad del core.", img: "https://i.imgur.com/oef7j2C.gif", category: "Core" },
-                    { name: "Remo con Toalla", desc: "Sentado, pasa una toalla por tus pies y tira de ella, retrayendo las escápulas. Fortalece la espalda alta usando solo una toalla.", img: "https://i.imgur.com/AWhh3ng.gif", category: "Fuerza" },
-                    { name: "Puente de Glúteos", desc: "Eleva la cadera contrayendo los glúteos, no la espalda baja. Activa la cadena posterior de forma segura.", img: "https://i.imgur.com/3flvDzt.gif", category: "Fuerza" }
+                    { name: "Sentadilla (Peso Corporal)", desc: "Espalda recta, baja la cadera como si te sentaras.", img: "https://i.imgur.com/sC3g01M.gif", category: "Fuerza" },
+                    { name: "Flexiones Inclinadas", desc: "Manos en un banco o pared. A menor inclinación, mayor dificultad.", img: "https://i.imgur.com/k1xPbzH.gif", category: "Fuerza" },
+                    { name: "Plancha Frontal", desc: "Cuerpo en línea recta de talones a cabeza.", img: "https://i.imgur.com/oef7j2C.gif", category: "Core" },
+                    { name: "Remo con Toalla", desc: "Sentado, pasa una toalla por tus pies y tira de ella, retrayendo las escápulas.", img: "https://i.imgur.com/AWhh3ng.gif", category: "Fuerza" },
+                    { name: "Puente de Glúteos", desc: "Eleva la cadera contrayendo los glúteos.", img: "https://i.imgur.com/3flvDzt.gif", category: "Fuerza" }
                 ]},
                 "day2": { title: "Día 2: Tracción y Resistencia", exercises: [
-                    { name: "Zancadas Alternas", desc: "Da un paso largo y baja la rodilla de atrás casi hasta el suelo. Mantén el torso vertical. Trabaja fuerza y equilibrio.", img: "https://i.imgur.com/V7aQ3er.gif", category: "Fuerza" },
-                    { name: "Dominadas Australianas", desc: "Con una barra baja o mesa resistente. Tira del pecho hacia la barra. La mejor preparación para dominadas completas.", img: "https://i.imgur.com/yD9j2rZ.gif", category: "Fuerza" },
-                    { name: "Escaladores (Controlados)", desc: "En posición de plancha, lleva las rodillas al pecho lentamente, manteniendo el core estable. Un ejercicio de core dinámico.", img: "https://i.imgur.com/C7nByo5.gif", category: "Core" },
-                    { name: "Peso Muerto Rumano (sin peso)", desc: "Concéntrate en la bisagra de cadera, manteniendo la espalda recta. Enseña un patrón de movimiento fundamental.", img: "https://i.imgur.com/TkbIuCo.gif", category: "Movilidad" },
-                    { name: "Plancha Lateral", reps: "20s por lado", desc: "Mantén el cuerpo en una línea recta lateral, evitando que la cadera caiga. Fortalece los oblicuos.", img: "https://i.imgur.com/R35Inw6.gif", category: "Core" }
+                    { name: "Zancadas Alternas", desc: "Da un paso largo y baja la rodilla de atrás casi hasta el suelo.", img: "https://i.imgur.com/V7aQ3er.gif", category: "Fuerza" },
+                    { name: "Dominadas Australianas", desc: "Con una barra baja o mesa resistente. Tira del pecho hacia la barra.", img: "https://i.imgur.com/yD9j2rZ.gif", category: "Fuerza" },
+                    { name: "Escaladores (Controlados)", desc: "En posición de plancha, lleva las rodillas al pecho lentamente.", img: "https://i.imgur.com/C7nByo5.gif", category: "Core" },
+                    { name: "Peso Muerto Rumano (sin peso)", desc: "Concéntrate en la bisagra de cadera, espalda recta.", img: "https://i.imgur.com/TkbIuCo.gif", category: "Movilidad" },
+                    { name: "Plancha Lateral", reps: "20s por lado", desc: "Mantén el cuerpo en una línea recta lateral.", img: "https://i.imgur.com/R35Inw6.gif", category: "Core" }
                 ]},
                 "day3": { title: "Día 3: Full Body y Transferencia", exercises: [
-                    { name: "Levantamiento Turco (Parcial)", desc: "Practica solo hasta el paso de apoyarte en la mano y elevar la cadera. Lento y controlado. El ejercicio maestro de la estabilidad.", img: "https://i.imgur.com/mJ9r2tU.gif", category: "Coordinación" },
-                    { name: "Swing (con mochila)", desc: "Movimiento explosivo de cadera. Usa una mochila con libros o botellas de agua. Desarrolla potencia en la cadera.", img: "https://i.imgur.com/LFRuL1d.gif", category: "Potencia" },
-                    { name: "Caminata del Granjero", desc: "Coge peso en cada mano (garrafas de agua) y camina con la espalda recta. Fortalece el agarre y el core de forma funcional.", img: "https://i.imgur.com/yE7xW9k.gif", category: "Fuerza" },
-                    { name: "Subidas al Cajón/Escalón", desc: "Alterna subir a una superficie elevada. Controla la bajada. Un ejercicio de bajo impacto para el tren inferior.", img: "https://i.imgur.com/5V4yL2O.gif", category: "Fuerza" },
-                    { name: "Press Pallof (con banda)", desc: "Con una banda elástica de resistencia, extiéndela al frente, resistiendo la rotación. El mejor ejercicio anti-rotación para el core.", img: "https://i.imgur.com/4WqCgN2.gif", category: "Core" }
+                    { name: "Levantamiento Turco (Parcial)", desc: "Practica solo hasta el paso de apoyarte en la mano y elevar la cadera.", img: "https://i.imgur.com/mJ9r2tU.gif", category: "Coordinación" },
+                    { name: "Swing (con mochila)", desc: "Movimiento explosivo de cadera.", img: "https://i.imgur.com/LFRuL1d.gif", category: "Potencia" },
+                    { name: "Caminata del Granjero", desc: "Coge peso en cada mano y camina con la espalda recta.", img: "https://i.imgur.com/yE7xW9k.gif", category: "Fuerza" },
+                    { name: "Subidas al Cajón/Escalón", desc: "Alterna subir a una superficie elevada. Controla la bajada.", img: "https://i.imgur.com/5V4yL2O.gif", category: "Fuerza" },
+                    { name: "Press Pallof (con banda)", desc: "Con banda elástica, extiéndela al frente, resistiendo la rotación.", img: "https://i.imgur.com/4WqCgN2.gif", category: "Core" }
                 ]}
             }
         },
         "2": {
             title: "Mes 2: Intensificación",
-            interval: "45s trabajo / 15s descanso",
-            rounds: "4",
-            hiit_duration: 25,
+            interval: "45s trabajo / 15s descanso", rounds: "4", hiit_duration: 25,
             days: {
                 "day1": { title: "Día 1: Fuerza Unilateral", exercises: [
-                    { name: "Sentadilla Búlgara", desc: "Pie trasero elevado en una silla. Baja hasta que el muslo delantero esté paralelo al suelo. Reta el equilibrio y la fuerza de cada pierna.", img: "https://i.imgur.com/M9y9rL6.gif", category: "Fuerza" },
-                    { name: "Flexiones con Liberación de Manos", desc: "Baja hasta el suelo, levanta las manos brevemente y empuja hacia arriba explosivamente. Aumenta la potencia de empuje.", img: "https://i.imgur.com/tYV9L39.gif", category: "Potencia" },
-                    { name: "Plancha con Alcance", desc: "En posición de plancha, extiende un brazo hacia adelante sin rotar las caderas. Un reto avanzado para la estabilidad del core.", img: "https://i.imgur.com/PabA5CT.gif", category: "Core" },
-                    { name: "Remo a una Mano (con mochila)", desc: "Inclínate con la espalda recta, apoya una mano en una silla y rema con la otra. Corrige desbalances de fuerza.", img: "https://i.imgur.com/3Jg9g20.gif", category: "Fuerza" },
-                    { name: "Elevación de Cadera a una Pierna", desc: "Igual que el puente de glúteos, pero con una pierna extendida. Aumenta la activación del glúteo.", img: "https://i.imgur.com/sHjJzwy.gif", category: "Fuerza" }
+                    { name: "Sentadilla Búlgara", desc: "Pie trasero elevado en una silla. Reta el equilibrio y la fuerza.", img: "https://i.imgur.com/M9y9rL6.gif", category: "Fuerza" },
+                    { name: "Flexiones con Liberación de Manos", desc: "Baja hasta el suelo, levanta las manos brevemente y empuja explosivamente.", img: "https://i.imgur.com/tYV9L39.gif", category: "Potencia" },
+                    { name: "Plancha con Alcance", desc: "En plancha, extiende un brazo hacia adelante sin rotar las caderas.", img: "https://i.imgur.com/PabA5CT.gif", category: "Core" },
+                    { name: "Remo a una Mano (con mochila)", desc: "Inclínate con la espalda recta, apoya una mano en una silla y rema.", img: "https://i.imgur.com/3Jg9g20.gif", category: "Fuerza" },
+                    { name: "Elevación de Cadera a una Pierna", desc: "Puente de glúteos, pero con una pierna extendida.", img: "https://i.imgur.com/sHjJzwy.gif", category: "Fuerza" }
                 ]},
                 "day2": { title: "Día 2: Resistencia y Core Avanzado", exercises: [
-                    { name: "Zancada Inversa con Elevación", desc: "Da un paso hacia atrás en una zancada y al volver, eleva la rodilla al pecho. Combina fuerza, equilibrio y coordinación.", img: "https://i.imgur.com/1G2t82j.gif", category: "Coordinación" },
-                    { name: "Flexiones en Pica", desc: "Desde una posición de 'V' invertida, baja la cabeza hacia el suelo. Trabaja los hombros, preparando para el handstand.", img: "https://i.imgur.com/eB3dGSA.gif", category: "Fuerza" },
-                    { name: "Plancha Spiderman", desc: "En posición de plancha, lleva la rodilla hacia el codo del mismo lado. Trabaja oblicuos y movilidad de cadera.", img: "https://i.imgur.com/B9OcyL3.gif", category: "Core" },
-                    { name: "Buenos Días (sin peso)", desc: "De pie, manos en la nuca. Realiza una bisagra de cadera manteniendo la espalda recta. Fortalece la cadena posterior.", img: "https://i.imgur.com/0iSgUu1.gif", category: "Fuerza" },
-                    { name: "Limpia Parabrisas (Tumbado)", desc: "Boca arriba, piernas a 90 grados. Déjalas caer de lado a lado sin tocar el suelo. Control y fuerza rotacional del core.", img: "https://i.imgur.com/N7iVd9q.gif", category: "Core" }
+                    { name: "Zancada Inversa con Elevación", desc: "Da un paso atrás en una zancada y al volver, eleva la rodilla al pecho.", img: "https://i.imgur.com/1G2t82j.gif", category: "Coordinación" },
+                    { name: "Flexiones en Pica", desc: "Desde una 'V' invertida, baja la cabeza hacia el suelo. Trabaja los hombros.", img: "https://i.imgur.com/eB3dGSA.gif", category: "Fuerza" },
+                    { name: "Plancha Spiderman", desc: "En plancha, lleva la rodilla hacia el codo del mismo lado.", img: "https://i.imgur.com/B9OcyL3.gif", category: "Core" },
+                    { name: "Buenos Días (sin peso)", desc: "De pie, manos en la nuca. Realiza una bisagra de cadera.", img: "https://i.imgur.com/0iSgUu1.gif", category: "Fuerza" },
+                    { name: "Limpia Parabrisas (Tumbado)", desc: "Boca arriba, piernas a 90 grados. Déjalas caer de lado a lado.", img: "https://i.imgur.com/N7iVd9q.gif", category: "Core" }
                 ]},
                 "day3": { title: "Día 3: Potencia y Coordinación", exercises: [
-                    { name: "Sentadilla con Salto", desc: "Realiza una sentadilla y salta explosivamente. Aterriza suavemente, absorbiendo el impacto. Desarrolla potencia en el tren inferior.", img: "https://i.imgur.com/rGgXp2e.gif", category: "Potencia" },
-                    { name: "Flexiones Declinadas", desc: "Pies elevados en una silla o escalón. Mayor énfasis en la parte superior del pecho y hombros.", img: "https://i.imgur.com/9C0D3J1.gif", category: "Fuerza" },
-                    { name: "Burpee (sin flexión)", desc: "Baja a posición de plancha, vuelve a ponerte de pie y estira los brazos. Un ejercicio cardiovascular de cuerpo completo.", img: "https://i.imgur.com/tH3aL5P.gif", category: "Potencia" },
-                    { name: "Paseo del Cangrejo", desc: "Sentado, manos y pies en el suelo. Eleva la cadera y camina hacia adelante y atrás. Mejora la coordinación y la fuerza de la cadena posterior.", img: "https://i.imgur.com/9D6o9a8.gif", category: "Coordinación" },
-                    { name: "Toques al Talón (Tumbado)", desc: "Boca arriba, rodillas flexionadas. Levanta cabeza y hombros y toca alternativamente cada talón. Enfocado en los oblicuos.", img: "https://i.imgur.com/xTafL6z.gif", category: "Core" }
+                    { name: "Sentadilla con Salto", desc: "Realiza una sentadilla y salta explosivamente. Aterriza suavemente.", img: "https://i.imgur.com/rGgXp2e.gif", category: "Potencia" },
+                    { name: "Flexiones Declinadas", desc: "Pies elevados en una silla. Mayor énfasis en pecho superior y hombros.", img: "https://i.imgur.com/9C0D3J1.gif", category: "Fuerza" },
+                    { name: "Burpee (sin flexión)", desc: "Baja a plancha, vuelve a ponerte de pie y estira los brazos.", img: "https://i.imgur.com/tH3aL5P.gif", category: "Potencia" },
+                    { name: "Paseo del Cangrejo", desc: "Sentado, manos y pies en el suelo, eleva la cadera y camina.", img: "https://i.imgur.com/9D6o9a8.gif", category: "Coordinación" },
+                    { name: "Toques al Talón (Tumbado)", desc: "Boca arriba, toca alternativamente cada talón.", img: "https://i.imgur.com/xTafL6z.gif", category: "Core" }
                 ]}
             }
         },
         "3": {
             title: "Mes 3: Potencia y Flujo",
-            interval: "50s trabajo / 10s descanso",
-            rounds: "4-5",
-            hiit_duration: 30,
+            interval: "50s trabajo / 10s descanso", rounds: "4-5", hiit_duration: 30,
             days: {
                 "day1": { title: "Día 1: Complejos de Fuerza", exercises: [
-                    { name: "Sentadilla Pistola (asistida)", desc: "Sujétate al marco de una puerta o una silla y realiza una sentadilla a una pierna. La máxima expresión de fuerza y equilibrio unilateral.", img: "https://i.imgur.com/L4DbDqs.gif", category: "Fuerza" },
-                    { name: "Flexión Arquero", desc: "Desde una posición de flexión ancha, desplaza el peso hacia un lado, estirando el otro brazo. Un paso previo a la flexión a una mano.", img: "https://i.imgur.com/o0scH67.gif", category: "Fuerza" },
-                    { name: "Plancha a Plancha Baja", desc: "Desde plancha de manos, baja a plancha de codos y vuelve a subir. Alterna el brazo que inicia. Resistencia y estabilidad.", img: "https://i.imgur.com/zAUmE4a.gif", category: "Core" },
-                    { name: "Remo Renegado (con garrafas)", desc: "En posición de plancha sobre dos garrafas de agua, rema alternativamente cada una. Un reto total para el core y la espalda.", img: "https://i.imgur.com/uNlq3sF.gif", category: "Fuerza" },
-                    { name: "Elevación de Piernas (Tumbado)", desc: "Boca arriba, levanta las piernas rectas hasta 90 grados y bájalas lentamente. Fortalece la parte baja del abdomen.", img: "https://i.imgur.com/L3TYgko.gif", category: "Core" }
+                    { name: "Sentadilla Pistola (asistida)", desc: "Sujétate a una puerta y realiza una sentadilla a una pierna.", img: "https://i.imgur.com/L4DbDqs.gif", category: "Fuerza" },
+                    { name: "Flexión Arquero", desc: "Desde una posición de flexión ancha, desplaza el peso hacia un lado.", img: "https://i.imgur.com/o0scH67.gif", category: "Fuerza" },
+                    { name: "Plancha a Plancha Baja", desc: "Desde plancha de manos, baja a plancha de codos y vuelve a subir.", img: "https://i.imgur.com/zAUmE4a.gif", category: "Core" },
+                    { name: "Remo Renegado (con garrafas)", desc: "En posición de plancha sobre garrafas, rema alternativamente.", img: "https://i.imgur.com/uNlq3sF.gif", category: "Fuerza" },
+                    { name: "Elevación de Piernas (Tumbado)", desc: "Boca arriba, levanta las piernas rectas y bájalas lentamente.", img: "https://i.imgur.com/L3TYgko.gif", category: "Core" }
                 ]},
                 "day2": { title: "Día 2: Agilidad y Resistencia Total", exercises: [
-                    { name: "Zancada con Salto", desc: "Desde una posición de zancada, salta y cambia las piernas en el aire. Exige control y potencia.", img: "https://i.imgur.com/BvLvhM4.gif", category: "Potencia" },
-                    { name: "Flexión Hindú", desc: "Desde pica, baja en un movimiento fluido hasta una cobra y vuelve. Combina movilidad, fuerza y flujo.", img: "https://i.imgur.com/L79pY5M.gif", category: "Coordinación" },
-                    { name: "Oso Gateando (Bear Crawl)", desc: "A gatas con las rodillas flotando, avanza coordinando brazo y pierna opuestos. Mejora la coordinación y la fuerza del core.", img: "https://i.imgur.com/gK9o9b0.gif", category: "Coordinación" },
-                    { name: "Sentadilla Cosaca", desc: "Desde una postura amplia, desplaza el peso a un lado, bajando la cadera y manteniendo la otra pierna estirada. Movilidad y fuerza lateral.", img: "https://i.imgur.com/mO2P2j1.gif", category: "Movilidad" },
-                    { name: "Abdominales en V (V-Ups)", desc: "Tumbado, levanta simultáneamente torso y piernas para formar una 'V' con tu cuerpo. Un ejercicio avanzado para el abdomen.", img: "https://i.imgur.com/e5j2jYw.gif", category: "Core" }
+                    { name: "Zancada con Salto", desc: "Desde una posición de zancada, salta y cambia las piernas en el aire.", img: "https://i.imgur.com/BvLvhM4.gif", category: "Potencia" },
+                    { name: "Flexión Hindú", desc: "Desde pica, baja en un movimiento fluido hasta una cobra y vuelve.", img: "https://i.imgur.com/L79pY5M.gif", category: "Coordinación" },
+                    { name: "Oso Gateando (Bear Crawl)", desc: "A gatas con las rodillas flotando, avanza coordinando brazo y pierna opuestos.", img: "https://i.imgur.com/gK9o9b0.gif", category: "Coordinación" },
+                    { name: "Sentadilla Cosaca", desc: "Desde una postura amplia, desplaza el peso a un lado, bajando la cadera.", img: "https://i.imgur.com/mO2P2j1.gif", category: "Movilidad" },
+                    { name: "Abdominales en V (V-Ups)", desc: "Tumbado, levanta simultáneamente torso y piernas para formar una 'V'.", img: "https://i.imgur.com/e5j2jYw.gif", category: "Core" }
                 ]},
                 "day3": { title: "Día 3: Reto de Calistenia", exercises: [
-                    { name: "Paseo por la Pared (Wall Walk)", desc: "Empieza en plancha con los pies en la pared y camina con las manos hacia ella, elevando la cadera. El camino hacia el handstand.", img: "https://i.imgur.com/wVbKQzP.gif", category: "Fuerza" },
-                    { name: "Flexión a una Mano (negativa)", desc: "Baja lo más lento que puedas usando solo un brazo. Ayúdate con ambos para subir. Construye la fuerza para el movimiento completo.", img: "https://i.imgur.com/S9s4F16.gif", category: "Fuerza" },
-                    { name: "Plancha Superman", desc: "En posición de plancha, extiende un brazo y la pierna opuesta. Máxima tensión y control del core.", img: "https://i.imgur.com/s6wJ7c3.gif", category: "Core" },
-                    { name: "Sentadilla Camarón (asistida)", desc: "Sujeta un pie por detrás y baja en una sentadilla con la otra pierna. Usa apoyo si es necesario. Un reto de equilibrio y fuerza.", img: "https://i.imgur.com/R3C4dC7.gif", category: "Fuerza" },
-                    { name: "L-Sit (Tuck Sit)", desc: "En el suelo o en paralelas improvisadas (sillas), eleva las rodillas al pecho contrayendo el abdomen. Un fundamental de la calistenia.", img: "https://i.imgur.com/J7t6z8S.gif", category: "Core" }
+                    { name: "Paseo por la Pared (Wall Walk)", desc: "En plancha con los pies en la pared, camina con las manos hacia ella.", img: "https://i.imgur.com/wVbKQzP.gif", category: "Fuerza" },
+                    { name: "Flexión a una Mano (negativa)", desc: "Baja lo más lento que puedas usando solo un brazo.", img: "https://i.imgur.com/S9s4F16.gif", category: "Fuerza" },
+                    { name: "Plancha Superman", desc: "En plancha, extiende un brazo y la pierna opuesta.", img: "https://i.imgur.com/s6wJ7c3.gif", category: "Core" },
+                    { name: "Sentadilla Camarón (asistida)", desc: "Sujeta un pie por detrás y baja en una sentadilla con la otra pierna.", img: "https://i.imgur.com/R3C4dC7.gif", category: "Fuerza" },
+                    { name: "L-Sit (Tuck Sit)", desc: "En el suelo o en paralelas, eleva las rodillas al pecho.", img: "https://i.imgur.com/J7t6z8S.gif", category: "Core" }
                 ]}
             }
         }
     }
 };
 
+    // --- VARIABLES GLOBALES Y ELEMENTOS DEL DOM ---
     let completedDays = {};
     const STORAGE_KEY = 'workoutProgress';
 
@@ -372,7 +374,6 @@ const planData = {
     const modalTitle = document.getElementById('modal-title');
     const modalImg = document.getElementById('modal-img');
     const modalDesc = document.getElementById('modal-desc');
-    const modalClose = document.getElementById('modal-close');
     const modalTags = document.getElementById('modal-tags');
     const assignmentModal = document.getElementById('assignment-modal');
     const assignmentTitle = document.getElementById('assignment-title');
@@ -389,14 +390,12 @@ const planData = {
     let planningViewDate = new Date();
     
     const categoryColors = {
-        "Fuerza": "bg-orange-200/20 text-orange-400",
-        "Core": "bg-yellow-200/20 text-yellow-400",
-        "Movilidad": "bg-green-200/20 text-green-400",
-        "Potencia": "bg-red-200/20 text-red-400",
-        "Coordinación": "bg-sky-200/20 text-sky-400",
-        "Flexibilidad": "bg-purple-200/20 text-purple-400"
+        "Fuerza": "bg-orange-200/20 text-orange-400", "Core": "bg-yellow-200/20 text-yellow-400",
+        "Movilidad": "bg-green-200/20 text-green-400", "Potencia": "bg-red-200/20 text-red-400",
+        "Coordinación": "bg-sky-200/20 text-sky-400", "Flexibilidad": "bg-purple-200/20 text-purple-400"
     };
 
+    // --- FUNCIONES DE MODALES ---
     function showModal(exercise) {
         if (!exercise) return;
         modalTitle.textContent = exercise.name;
@@ -428,16 +427,7 @@ const planData = {
         document.body.style.overflow = 'auto';
     }
 
-
-    modalClose.addEventListener('click', hideModal);
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            hideModal();
-        }
-    });
-    
-    cancelAssignmentBtn.addEventListener('click', hideAssignmentModal);
-    
+    // --- FUNCIONES DE RENDERIZADO ---
     function createExerciseCard(exercise) {
         const card = document.createElement('div');
         card.className = 'exercise-card bg-gray-800/50 p-3 rounded-xl shadow-lg flex items-center gap-4 cursor-pointer hover:shadow-2xl hover:ring-2 hover:ring-orange-500 transition-all duration-300 transform hover:-translate-y-1 group';
@@ -460,7 +450,7 @@ const planData = {
         const workoutDetails = document.getElementById('workout-details');
         
         if (!dayData) {
-            workoutDetails.innerHTML = `<div class="text-center text-slate-400 p-8 bg-gray-800/30 rounded-xl">Haz clic en un día del calendario para programar o ver un entrenamiento.</div>`;
+            workoutDetails.innerHTML = `<div class="text-center text-slate-400 p-8 bg-gray-800/30 rounded-xl">Entrenamiento no encontrado.</div>`;
             return;
         }
 
@@ -478,19 +468,19 @@ const planData = {
                 <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
                     <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
                         <span><span class="text-orange-400 mr-2 font-black">B</span> Circuito HIIT: ${dayData.title}</span>
-                         <div class="accordion-icon text-orange-400 text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
+                          <div class="accordion-icon text-orange-400 text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
                     </button>
                     <div class="accordion-content">
-                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="hiit-container"></div>
+                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="hiit-container"></div>
                     </div>
                 </div>
                 <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
                     <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
                         <span><span class="text-orange-400 mr-2 font-black">C</span> Enfriamiento y Estiramientos</span>
-                         <div class="accordion-icon text-orange-400 text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
+                          <div class="accordion-icon text-orange-400 text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
                     </button>
                     <div class="accordion-content">
-                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="cooldown-container"></div>
+                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="cooldown-container"></div>
                     </div>
                 </div>
             </div>
@@ -531,9 +521,7 @@ const planData = {
     function renderPlan(month) {
         const monthData = planData.months[month];
         planContent.innerHTML = `
-            <div id="workout-details">
-                <div class="text-center text-slate-400 p-8 bg-gray-800/30 rounded-xl">Haz clic en un día del calendario para programar o ver un entrenamiento.</div>
-            </div>
+            <div id="workout-details"></div>
             <div id="chart-section" class="mt-12 accordion-item rounded-xl shadow-lg p-6">
                 <h3 class="text-2xl font-bold text-center mb-4 text-slate-100">Distribución de la Sesión - Mes ${month}</h3>
                 <div class="chart-container" style="height: 200px; max-width: 200px; margin: auto;">
@@ -543,16 +531,7 @@ const planData = {
             </div>
         `;
 
-        planContent.addEventListener('click', e => {
-            const cardTarget = e.target.closest('.exercise-card');
-            if(cardTarget){
-                const exerciseName = cardTarget.dataset.exerciseName;
-                const allExercises = [...planData.warmups[1],...planData.warmups[2],...planData.warmups[3], ...planData.cooldowns[1],...planData.cooldowns[2],...planData.cooldowns[3]];
-                Object.values(planData.months).forEach(m => Object.values(m.days).forEach(d => allExercises.push(...d.exercises)));
-                const exercise = allExercises.find(ex => ex.name === exerciseName);
-                showModal(exercise);
-            }
-        });
+        renderDay(month, 'day1');
         
         if (currentChart) {
             currentChart.destroy();
@@ -614,22 +593,7 @@ const planData = {
         });
     }
 
-    monthTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const month = tab.dataset.month;
-            renderPlan(month);
-            monthTabs.forEach(t => {
-                t.classList.remove('tab-active');
-                t.classList.add('tab-inactive');
-            });
-            tab.classList.add('tab-active');
-            tab.classList.remove('tab-inactive');
-            
-            progressBar.style.width = `${(parseInt(month) / 3 * 100)}%`;
-        });
-    });
-    
-    // Calendar Logic
+    // --- LÓGICA DE CALENDARIO Y PROGRESO ---
     function loadProgress() {
         const data = localStorage.getItem(STORAGE_KEY);
         completedDays = data ? JSON.parse(data) : {};
@@ -640,29 +604,43 @@ const planData = {
         updateAnalytics();
     }
 
-    function renderCalendars(scrollToToday = false) {
+    function renderCalendars(smartScroll = false) {
         if(isFullView){
             renderFullCalendar();
         } else {
-            renderTimelineCalendar(scrollToToday);
+            renderTimelineCalendar(smartScroll);
         }
     }
 
-    function renderTimelineCalendar(scrollToToday = false) {
-        const timelineEl = calendarContainer.querySelector('#timeline-calendar');
-        const scrollPosition = timelineEl ? timelineEl.scrollLeft : 0;
+    function renderTimelineCalendar(smartScroll = false) {
+        const timelineWrapper = calendarContainer.querySelector('#timeline-wrapper');
+        const scrollPosition = timelineWrapper ? timelineWrapper.querySelector('.timeline-container').scrollLeft : 0;
         
-        calendarContainer.innerHTML = `<div id="timeline-calendar" class="timeline-container flex items-center gap-2 p-2 overflow-x-auto"></div>`;
-        const newTimelineEl = document.getElementById('timeline-calendar');
-        newTimelineEl.innerHTML = '';
-        
-        const today = new Date();
-        const startDate = new Date();
-        startDate.setDate(today.getDate() - 182);
+        if (!timelineWrapper) {
+            calendarContainer.innerHTML = `
+                <div id="timeline-wrapper">
+                    <div class="flex justify-between items-center mb-2 px-2">
+                        <button id="prev-timeline-month" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&lt;</button>
+                        <h4 id="timeline-month-year" class="text-lg font-bold text-center text-amber-400"></h4>
+                        <button id="next-timeline-month" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&gt;</button>
+                    </div>
+                    <div id="timeline-calendar" class="timeline-container flex items-center gap-2 p-2"></div>
+                </div>
+            `;
+        }
 
-        for (let i = 0; i < 365; i++) {
-            const day = new Date(startDate);
-            day.setDate(startDate.getDate() + i);
+        const timelineEl = document.getElementById('timeline-calendar');
+        const monthYearEl = document.getElementById('timeline-month-year');
+        timelineEl.innerHTML = '';
+        
+        monthYearEl.textContent = planningViewDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+        
+        const year = planningViewDate.getFullYear();
+        const month = planningViewDate.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const day = new Date(year, month, i);
             const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
             
             const dayEl = document.createElement('div');
@@ -691,28 +669,33 @@ const planData = {
             if(dateStr === planStartDate) {
                 dayEl.classList.add('start-date');
             }
-            newTimelineEl.appendChild(dayEl);
+            timelineEl.appendChild(dayEl);
         }
-        if(scrollToToday) {
+        
+        if(smartScroll) {
             setTimeout(() => {
-                const todayEl = document.querySelector('.timeline-day.today');
-                if(todayEl) {
-                    todayEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                const today = new Date();
+                const planStartDate = localStorage.getItem('workoutStartDate');
+                let targetEl = null;
+
+                if (planningViewDate.getFullYear() === today.getFullYear() && planningViewDate.getMonth() === today.getMonth()) {
+                    targetEl = document.querySelector('.timeline-day.today');
+                } else if (planStartDate && new Date(planStartDate).getFullYear() === planningViewDate.getFullYear() && new Date(planStartDate).getMonth() === planningViewDate.getMonth()) {
+                    targetEl = document.querySelector('.timeline-day.start-date');
+                }
+
+                if(targetEl) {
+                    targetEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                } else {
+                     timelineEl.scrollLeft = 0;
                 }
             }, 100);
-        } else if (scrollPosition) {
-            newTimelineEl.scrollLeft = scrollPosition;
+        } else if (scrollPosition !== null) {
+             timelineEl.scrollLeft = scrollPosition;
         }
     }
     
     function renderFullCalendar() {
-        let planStartDate = localStorage.getItem('workoutStartDate');
-        let rangeEndDate = null;
-        if(planStartDate) {
-            rangeEndDate = new Date(planStartDate);
-            rangeEndDate.setDate(rangeEndDate.getDate() + 83);
-        }
-
         calendarContainer.innerHTML = `
             <div class="flex justify-between items-center mb-4">
                  <button id="prev-block-btn" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&lt; 3 Meses</button>
@@ -764,8 +747,12 @@ const planData = {
                 }
                 if (currentDate.toDateString() === new Date().toDateString()) dayEl.classList.add('today');
 
+                const planStartDate = localStorage.getItem('workoutStartDate');
                 if(planStartDate) {
                     const startDateObj = new Date(planStartDate + 'T00:00:00');
+                    const rangeEndDate = new Date(startDateObj);
+                    rangeEndDate.setDate(startDateObj.getDate() + 83);
+                    
                     if (currentDate >= startDateObj && currentDate <= rangeEndDate) {
                         dayEl.classList.add('in-range');
                     } else {
@@ -780,38 +767,29 @@ const planData = {
             planningGridContainer.appendChild(monthDiv);
             date.setMonth(date.getMonth() + 1);
         }
-
-        document.getElementById('prev-block-btn').addEventListener('click', () => {
-            planningViewDate.setMonth(planningViewDate.getMonth() - 3);
-            renderFullCalendar();
-        });
-        document.getElementById('next-block-btn').addEventListener('click', () => {
-            planningViewDate.setMonth(planningViewDate.getMonth() + 3);
-            renderFullCalendar();
-        });
-
+        
         const infoContainer = document.getElementById('plan-end-date-info');
         infoContainer.innerHTML = '';
-        if(planStartDate){
-             infoContainer.innerHTML = `<span>Tu plan de 12 semanas termina el ${rangeEndDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.</span> <button id="reset-start-date" class="text-xs bg-yellow-800/80 text-yellow-300 px-2 py-1 rounded-md hover:bg-yellow-700">Resetear Inicio</button>`;
-             document.getElementById('reset-start-date').addEventListener('click', () => {
-                localStorage.removeItem('workoutStartDate');
-                renderCalendars();
-                updateAnalytics();
-             });
+        const planStartDate = localStorage.getItem('workoutStartDate');
+        
+        if (planStartDate) {
+            const rangeEndDate = new Date(planStartDate);
+            rangeEndDate.setDate(rangeEndDate.getDate() + 83);
+            infoContainer.innerHTML = `<span>Tu plan de 12 semanas termina el ${rangeEndDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.</span> <button id="reset-start-date" class="text-xs bg-yellow-800/80 text-yellow-300 px-2 py-1 rounded-md hover:bg-yellow-700 ml-2">Resetear Inicio</button>`;
         } else {
-             infoContainer.textContent = 'Haz clic en un día para establecer el inicio de tu plan de 12 semanas.';
+            infoContainer.textContent = 'Haz clic en un día para establecer el inicio de tu plan de 12 semanas.';
         }
+
         if (Object.keys(completedDays).length > 0) {
             const clearBtn = document.createElement('button');
             clearBtn.id = 'clear-all-marks';
             clearBtn.className = 'text-xs bg-red-800/80 text-red-300 px-2 py-1 rounded-md hover:bg-red-700 ml-2';
             clearBtn.textContent = 'Limpiar Todo';
-            clearBtn.onclick = showClearAllConfirmation;
-             infoContainer.appendChild(clearBtn);
+            infoContainer.appendChild(clearBtn);
         }
     }
     
+    // --- MANEJADORES DE EVENTOS ---
     viewToggle.addEventListener('change', () => {
         isFullView = viewToggle.checked;
         const dot = document.querySelector('.dot');
@@ -819,13 +797,65 @@ const planData = {
         planningViewDate = new Date();
         renderCalendars(true);
     });
+
+    monthTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const month = tab.dataset.month;
+            renderPlan(month);
+            monthTabs.forEach(t => {
+                t.classList.remove('tab-active');
+                t.classList.add('tab-inactive');
+            });
+            tab.classList.add('tab-active');
+            tab.classList.remove('tab-inactive');
+            
+            progressBar.style.width = `${(parseInt(month) / 3 * 100)}%`;
+        });
+    });
     
     calendarContainer.addEventListener('click', e => {
-        const target = e.target.closest('.timeline-day, .grid-day');
-        if (target && target.dataset.date) {
-            handleDayClick(target.dataset.date);
+        const dayTarget = e.target.closest('.timeline-day, .grid-day');
+        if (dayTarget && dayTarget.dataset.date) {
+            handleDayClick(dayTarget.dataset.date);
+            return;
+        }
+
+        const navTargetId = e.target.closest('button')?.id;
+        switch (navTargetId) {
+            case 'prev-timeline-month':
+                planningViewDate.setMonth(planningViewDate.getMonth() - 1);
+                renderTimelineCalendar(true);
+                break;
+            case 'next-timeline-month':
+                planningViewDate.setMonth(planningViewDate.getMonth() + 1);
+                renderTimelineCalendar(true);
+                break;
+            case 'prev-block-btn':
+                planningViewDate.setMonth(planningViewDate.getMonth() - 3);
+                renderFullCalendar();
+                break;
+            case 'next-block-btn':
+                planningViewDate.setMonth(planningViewDate.getMonth() + 3);
+                renderFullCalendar();
+                break;
+            case 'reset-start-date':
+                localStorage.removeItem('workoutStartDate');
+                renderCalendars();
+                updateAnalytics();
+                break;
+            case 'clear-all-marks':
+                showClearAllConfirmation();
+                break;
         }
     });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal || e.target.closest('#modal-close')) {
+            hideModal();
+        }
+    });
+
+    cancelAssignmentBtn.addEventListener('click', hideAssignmentModal);
 
     function handleDayClick(date) {
         const entry = completedDays[date];
@@ -833,24 +863,27 @@ const planData = {
         const monthWorkouts = planData.months[activeMonth].days;
         const planStartDate = localStorage.getItem('workoutStartDate');
         const clickedDate = new Date(date + 'T00:00:00');
+        const today = new Date();
+        today.setHours(0,0,0,0);
 
         if(planStartDate && clickedDate < new Date(planStartDate + 'T00:00:00')) {
             return;
         }
-
+        
         assignmentDateEl.textContent = clickedDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         assignmentOptionsEl.innerHTML = '';
         deleteAssignmentBtn.style.display = 'none';
 
-        if (!isFullView) { // --- PROGRESS VIEW LOGIC ---
+        if (!isFullView) { // Vista de Progreso (timeline)
             if (entry) {
                 entry.completed = !entry.completed;
                 saveProgress();
                 renderCalendars(false);
                 renderDay(entry.month, entry.workout);
             } else {
+                if (clickedDate < today) return;
                 assignmentTitle.textContent = "Programar Entrenamiento";
-                 if (!planStartDate) {
+                if (!planStartDate) {
                     const startPlanBtn = document.createElement('button');
                     startPlanBtn.className = 'w-full p-3 bg-green-600 rounded-lg text-white font-semibold hover:bg-green-500 transition-colors';
                     startPlanBtn.textContent = 'Establecer como Primer Día del Plan';
@@ -882,7 +915,7 @@ const planData = {
             return;
         }
 
-        // --- PLANNING VIEW LOGIC ---
+        // Vista de Planificación (3 meses)
         assignmentTitle.textContent = "Acciones de Planificación";
         if (entry) {
              const unmarkBtn = document.createElement('button');
@@ -902,18 +935,20 @@ const planData = {
                 saveProgress();
                 renderCalendars();
                 hideAssignmentModal();
-            };
+             };
         } else {
              if (!planStartDate) {
-                const startPlanBtn = document.createElement('button');
-                startPlanBtn.className = 'w-full p-3 bg-green-600 rounded-lg text-white font-semibold hover:bg-green-500 transition-colors';
-                startPlanBtn.textContent = `Establecer como Primer Día`;
-                startPlanBtn.onclick = () => {
-                    localStorage.setItem('workoutStartDate', date);
-                    renderCalendars();
-                    hideAssignmentModal();
-                };
-                assignmentOptionsEl.appendChild(startPlanBtn);
+                if(clickedDate >= today) {
+                    const startPlanBtn = document.createElement('button');
+                    startPlanBtn.className = 'w-full p-3 bg-green-600 rounded-lg text-white font-semibold hover:bg-green-500 transition-colors';
+                    startPlanBtn.textContent = `Establecer como Primer Día`;
+                    startPlanBtn.onclick = () => {
+                        localStorage.setItem('workoutStartDate', date);
+                        renderCalendars();
+                        hideAssignmentModal();
+                    };
+                    assignmentOptionsEl.appendChild(startPlanBtn);
+                }
             }
             Object.keys(monthWorkouts).forEach(dayKey => {
                 const optionBtn = document.createElement('button');
@@ -1037,8 +1072,8 @@ const planData = {
                         grid: { color: 'rgba(255, 255, 255, 0.1)' }
                     },
                     x: {
-                         ticks: { color: '#9ca3af' },
-                         grid: { display: false }
+                        ticks: { color: '#9ca3af' },
+                        grid: { display: false }
                     }
                 },
                 plugins: { legend: { display: false } }
@@ -1046,7 +1081,7 @@ const planData = {
         });
     }
 
-    // Initial Load
+    // --- CARGA INICIAL ---
     loadProgress();
     renderCalendars(true);
     updateAnalytics();
@@ -1057,9 +1092,22 @@ const planData = {
             el.classList.add('fade-in');
         }, 100 * (index + 1));
     });
+
+    planContent.addEventListener('click', e => {
+        const cardTarget = e.target.closest('.exercise-card');
+        if(cardTarget){
+            const exerciseName = cardTarget.dataset.exerciseName;
+            const allExercises = [...planData.warmups[1],...planData.warmups[2],...planData.warmups[3], ...planData.cooldowns[1],...planData.cooldowns[2],...planData.cooldowns[3]];
+            Object.values(planData.months).forEach(m => Object.values(m.days).forEach(d => allExercises.push(...d.exercises)));
+            const exercise = allExercises.find(ex => ex.name === exerciseName);
+            showModal(exercise);
+        }
+    });
+
     renderPlan('1');
 
 });
 </script>
 </body>
 </html>
+
