@@ -48,16 +48,6 @@
             max-height: 2000px;
             padding: 1.5rem;
         }
-        .day-btn {
-            background-color: #374151;
-            color: #e5e7eb;
-        }
-        .day-btn.active {
-            background-color: #fb923c;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(251, 146, 60, 0.4);
-        }
         .modal-backdrop { transition: opacity 0.3s ease-in-out; }
         .modal-content { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease-in-out; }
         .modal-backdrop, .modal-content {
@@ -73,15 +63,6 @@
         .progress-bar-fill {
             transition: width 0.5s ease-in-out;
         }
-        .initial-hidden {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        .fade-in {
-            opacity: 1;
-            transform: translateY(0);
-        }
         .category-tag {
             display: inline-block;
             padding: 0.25rem 0.75rem;
@@ -94,34 +75,72 @@
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 350px;
-            margin-left: auto;
-            margin-right: auto;
+            height: 250px;
         }
         .accordion-icon {
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
-        .calendar-day { background-color: #374151; border-radius: 0.5rem; text-align: center; padding: 0.75rem 0.25rem; cursor: pointer; transition: all 0.2s ease-in-out; }
-        .calendar-day:hover { background-color: #4b5563; }
-        .calendar-day.completed { background-color: #f97316; color: white; font-weight: bold; }
-        .calendar-day.other-month { color: #6b7280; }
+        .timeline-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .timeline-container::-webkit-scrollbar {
+            display: none;
+        }
+        .timeline-day, .grid-day {
+            background-color: #374151;
+            border-radius: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+        .timeline-day { flex: 0 0 60px; padding: 0.75rem 0.25rem; }
+        .grid-day { aspect-ratio: 1/1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2px; }
+        .timeline-day:hover, .grid-day:hover:not(.out-of-range) { background-color: #4b5563; }
+        .timeline-day.scheduled::after, .grid-day.scheduled::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #facc15;
+        }
+        .timeline-day.completed, .grid-day.completed {
+            background-color: #f97316;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.5);
+        }
+        .timeline-day.completed::after, .grid-day.completed::after { display: none; }
+        .timeline-day.today, .grid-day.today { border: 2px solid #fb923c; }
+        .grid-day.other-month { color: #4b5563; background-color: #1f2937; cursor: default; }
+        .grid-day.in-range { background-color: rgba(55, 65, 81, 0.5); }
+        .grid-day.start-date, .timeline-day.start-date { background-color: #fbbf24; color: #111827; }
+        .grid-day.out-of-range, .timeline-day.out-of-range { background-color: #1f2937; color: #4b5563; cursor: not-allowed; }
+        
+        #view-toggle:checked ~ .relative .dot {
+            transform: translateX(1.5rem);
+            background-color: #f97316;
+        }
     </style>
 </head>
 <body class="antialiased">
 
     <div id="app" class="max-w-7xl mx-auto p-4 md:p-8">
-
-        <header class="text-center mb-10 initial-hidden">
+        <header class="text-center mb-10">
             <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 tracking-tight">Tu Viaje de 3 Meses</h1>
             <p class="text-xl text-slate-400 mt-2">Plan Progresivo para Movilidad y Fuerza Funcional</p>
         </header>
 
-        <div class="sticky top-4 z-40 bg-[#111827]/80 backdrop-blur-sm py-4 initial-hidden">
+        <div class="sticky top-4 z-40 bg-[#111827]/80 backdrop-blur-sm py-4">
             <div class="w-full bg-gray-700 rounded-full h-3 mb-4 shadow-inner">
                 <div id="progress-bar" class="bg-gradient-to-r from-amber-500 to-orange-600 h-3 rounded-full progress-bar-fill" style="width: 33.33%"></div>
             </div>
-
             <nav class="flex justify-center p-1 bg-gray-800/80 rounded-full shadow-lg">
                 <button data-month="1" class="month-tab flex-1 py-3 px-2 text-center font-bold text-lg transition-all duration-300 rounded-full tab-active">Mes 1: Adaptación</button>
                 <button data-month="2" class="month-tab flex-1 py-3 px-2 text-center font-bold text-lg transition-all duration-300 rounded-full tab-inactive">Mes 2: Intensificación</button>
@@ -129,23 +148,52 @@
             </nav>
         </div>
         
-        <section id="progress-section" class="my-10 initial-hidden">
-            <h2 class="text-3xl font-bold text-slate-200 mb-4 text-center">Mi Progreso</h2>
-            <div class="bg-gray-800/50 p-6 rounded-2xl shadow-lg border border-gray-700">
+        <main id="plan-content" class="transition-opacity duration-500 mt-8">
+        </main>
+        
+        <section id="progress-section" class="mt-12">
+             <div class="bg-gray-800/50 p-6 rounded-2xl shadow-lg border border-gray-700">
                 <div class="flex justify-between items-center mb-4">
-                    <button id="prev-month" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&lt;</button>
-                    <h3 id="month-year" class="text-xl font-bold text-white"></h3>
-                    <button id="next-month" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&gt;</button>
+                    <h2 class="text-3xl font-bold text-slate-200">Mi Centro de Mando</h2>
+                    <label for="view-toggle" class="flex items-center cursor-pointer">
+                        <span id="view-label-left" class="mr-3 text-sm font-medium">Progreso</span>
+                        <div class="relative">
+                            <input type="checkbox" id="view-toggle" class="sr-only">
+                            <div class="block bg-gray-600 w-14 h-8 rounded-full">
+                                <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                            </div>
+                        </div>
+                        <span id="view-label-right" class="ml-3 text-sm font-medium">Planificación</span>
+                    </label>
                 </div>
-                <div class="grid grid-cols-7 gap-2 text-center text-xs text-slate-400 mb-2">
-                    <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+
+                <div id="calendar-container"></div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mt-8">
+                    <div class="lg:col-span-3">
+                         <h3 class="text-xl font-bold text-white mb-4">Análisis de Cumplimiento (12 Semanas)</h3>
+                        <div class="chart-container h-64">
+                            <canvas id="compliance-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 space-y-4">
+                         <h3 class="text-xl font-bold text-white mb-4">Inteligencia de Entrenamiento</h3>
+                         <div class="bg-gray-900/50 p-4 rounded-xl">
+                            <p class="text-sm text-slate-400">Cumplimiento Total</p>
+                            <p id="total-compliance" class="text-3xl font-extrabold text-amber-400">0%</p>
+                         </div>
+                         <div class="bg-gray-900/50 p-4 rounded-xl">
+                            <p class="text-sm text-slate-400">Racha de Semanas Perfectas</p>
+                            <p id="perfect-streak" class="text-3xl font-extrabold text-orange-500">0</p>
+                         </div>
+                         <div class="bg-gray-900/50 p-4 rounded-xl">
+                            <p class="text-sm text-slate-400">Entrenamientos Totales</p>
+                            <p id="total-workouts" class="text-3xl font-extrabold text-white">0</p>
+                         </div>
+                    </div>
                 </div>
-                <div id="calendar-grid" class="calendar"></div>
             </div>
         </section>
-
-        <main id="plan-content" class="transition-opacity duration-500">
-        </main>
 
     </div>
 
@@ -165,6 +213,18 @@
                     <p id="modal-desc" class="text-slate-300 leading-relaxed overflow-y-auto"></p>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="assignment-modal" class="modal-backdrop fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+        <div class="modal-content bg-[#1f2937] border border-gray-700 rounded-2xl shadow-2xl w-full max-w-md">
+             <div class="p-6 text-center">
+                <h3 id="assignment-title" class="text-2xl font-bold text-white mb-4"></h3>
+                <p id="assignment-date" class="text-slate-400 mb-6"></p>
+                <div id="assignment-options" class="space-y-3"></div>
+                <button id="delete-assignment" class="hidden mt-4 w-full p-3 bg-red-800/50 rounded-lg text-red-400 font-semibold hover:bg-red-700/50 transition-colors">Borrar Programación</button>
+                <button id="cancel-assignment" class="mt-6 text-slate-400 hover:text-white">Cancelar</button>
+             </div>
         </div>
     </div>
 <script>
@@ -218,21 +278,21 @@ const planData = {
             rounds: "3-4",
             hiit_duration: 20,
             days: {
-                "1": { title: "Día 1: Empuje y Core", exercises: [
+                "day1": { title: "Día 1: Empuje y Core", exercises: [
                     { name: "Sentadilla (Peso Corporal)", desc: "Espalda recta, baja la cadera como si te sentaras. Mantén el pecho erguido. Un pilar fundamental para la fuerza del tren inferior.", img: "https://i.imgur.com/sC3g01M.gif", category: "Fuerza" },
                     { name: "Flexiones Inclinadas", desc: "Manos en un banco o pared. A menor inclinación, mayor dificultad. Cuerpo recto. Ideal para construir fuerza de empuje de forma progresiva.", img: "https://i.imgur.com/k1xPbzH.gif", category: "Fuerza" },
                     { name: "Plancha Frontal", desc: "Cuerpo en línea recta de talones a cabeza. Contrae abdomen y glúteos para máxima efectividad. El rey de la estabilidad del core.", img: "https://i.imgur.com/oef7j2C.gif", category: "Core" },
                     { name: "Remo con Toalla", desc: "Sentado, pasa una toalla por tus pies y tira de ella, retrayendo las escápulas. Fortalece la espalda alta usando solo una toalla.", img: "https://i.imgur.com/AWhh3ng.gif", category: "Fuerza" },
                     { name: "Puente de Glúteos", desc: "Eleva la cadera contrayendo los glúteos, no la espalda baja. Activa la cadena posterior de forma segura.", img: "https://i.imgur.com/3flvDzt.gif", category: "Fuerza" }
                 ]},
-                "2": { title: "Día 2: Tracción y Resistencia", exercises: [
+                "day2": { title: "Día 2: Tracción y Resistencia", exercises: [
                     { name: "Zancadas Alternas", desc: "Da un paso largo y baja la rodilla de atrás casi hasta el suelo. Mantén el torso vertical. Trabaja fuerza y equilibrio.", img: "https://i.imgur.com/V7aQ3er.gif", category: "Fuerza" },
                     { name: "Dominadas Australianas", desc: "Con una barra baja o mesa resistente. Tira del pecho hacia la barra. La mejor preparación para dominadas completas.", img: "https://i.imgur.com/yD9j2rZ.gif", category: "Fuerza" },
                     { name: "Escaladores (Controlados)", desc: "En posición de plancha, lleva las rodillas al pecho lentamente, manteniendo el core estable. Un ejercicio de core dinámico.", img: "https://i.imgur.com/C7nByo5.gif", category: "Core" },
                     { name: "Peso Muerto Rumano (sin peso)", desc: "Concéntrate en la bisagra de cadera, manteniendo la espalda recta. Enseña un patrón de movimiento fundamental.", img: "https://i.imgur.com/TkbIuCo.gif", category: "Movilidad" },
                     { name: "Plancha Lateral", reps: "20s por lado", desc: "Mantén el cuerpo en una línea recta lateral, evitando que la cadera caiga. Fortalece los oblicuos.", img: "https://i.imgur.com/R35Inw6.gif", category: "Core" }
                 ]},
-                "3": { title: "Día 3: Full Body y Transferencia", exercises: [
+                "day3": { title: "Día 3: Full Body y Transferencia", exercises: [
                     { name: "Levantamiento Turco (Parcial)", desc: "Practica solo hasta el paso de apoyarte en la mano y elevar la cadera. Lento y controlado. El ejercicio maestro de la estabilidad.", img: "https://i.imgur.com/mJ9r2tU.gif", category: "Coordinación" },
                     { name: "Swing (con mochila)", desc: "Movimiento explosivo de cadera. Usa una mochila con libros o botellas de agua. Desarrolla potencia en la cadera.", img: "https://i.imgur.com/LFRuL1d.gif", category: "Potencia" },
                     { name: "Caminata del Granjero", desc: "Coge peso en cada mano (garrafas de agua) y camina con la espalda recta. Fortalece el agarre y el core de forma funcional.", img: "https://i.imgur.com/yE7xW9k.gif", category: "Fuerza" },
@@ -247,21 +307,21 @@ const planData = {
             rounds: "4",
             hiit_duration: 25,
             days: {
-                "1": { title: "Día 1: Fuerza Unilateral", exercises: [
+                "day1": { title: "Día 1: Fuerza Unilateral", exercises: [
                     { name: "Sentadilla Búlgara", desc: "Pie trasero elevado en una silla. Baja hasta que el muslo delantero esté paralelo al suelo. Reta el equilibrio y la fuerza de cada pierna.", img: "https://i.imgur.com/M9y9rL6.gif", category: "Fuerza" },
                     { name: "Flexiones con Liberación de Manos", desc: "Baja hasta el suelo, levanta las manos brevemente y empuja hacia arriba explosivamente. Aumenta la potencia de empuje.", img: "https://i.imgur.com/tYV9L39.gif", category: "Potencia" },
                     { name: "Plancha con Alcance", desc: "En posición de plancha, extiende un brazo hacia adelante sin rotar las caderas. Un reto avanzado para la estabilidad del core.", img: "https://i.imgur.com/PabA5CT.gif", category: "Core" },
                     { name: "Remo a una Mano (con mochila)", desc: "Inclínate con la espalda recta, apoya una mano en una silla y rema con la otra. Corrige desbalances de fuerza.", img: "https://i.imgur.com/3Jg9g20.gif", category: "Fuerza" },
                     { name: "Elevación de Cadera a una Pierna", desc: "Igual que el puente de glúteos, pero con una pierna extendida. Aumenta la activación del glúteo.", img: "https://i.imgur.com/sHjJzwy.gif", category: "Fuerza" }
                 ]},
-                "2": { title: "Día 2: Resistencia y Core Avanzado", exercises: [
+                "day2": { title: "Día 2: Resistencia y Core Avanzado", exercises: [
                     { name: "Zancada Inversa con Elevación", desc: "Da un paso hacia atrás en una zancada y al volver, eleva la rodilla al pecho. Combina fuerza, equilibrio y coordinación.", img: "https://i.imgur.com/1G2t82j.gif", category: "Coordinación" },
                     { name: "Flexiones en Pica", desc: "Desde una posición de 'V' invertida, baja la cabeza hacia el suelo. Trabaja los hombros, preparando para el handstand.", img: "https://i.imgur.com/eB3dGSA.gif", category: "Fuerza" },
                     { name: "Plancha Spiderman", desc: "En posición de plancha, lleva la rodilla hacia el codo del mismo lado. Trabaja oblicuos y movilidad de cadera.", img: "https://i.imgur.com/B9OcyL3.gif", category: "Core" },
                     { name: "Buenos Días (sin peso)", desc: "De pie, manos en la nuca. Realiza una bisagra de cadera manteniendo la espalda recta. Fortalece la cadena posterior.", img: "https://i.imgur.com/0iSgUu1.gif", category: "Fuerza" },
                     { name: "Limpia Parabrisas (Tumbado)", desc: "Boca arriba, piernas a 90 grados. Déjalas caer de lado a lado sin tocar el suelo. Control y fuerza rotacional del core.", img: "https://i.imgur.com/N7iVd9q.gif", category: "Core" }
                 ]},
-                "3": { title: "Día 3: Potencia y Coordinación", exercises: [
+                "day3": { title: "Día 3: Potencia y Coordinación", exercises: [
                     { name: "Sentadilla con Salto", desc: "Realiza una sentadilla y salta explosivamente. Aterriza suavemente, absorbiendo el impacto. Desarrolla potencia en el tren inferior.", img: "https://i.imgur.com/rGgXp2e.gif", category: "Potencia" },
                     { name: "Flexiones Declinadas", desc: "Pies elevados en una silla o escalón. Mayor énfasis en la parte superior del pecho y hombros.", img: "https://i.imgur.com/9C0D3J1.gif", category: "Fuerza" },
                     { name: "Burpee (sin flexión)", desc: "Baja a posición de plancha, vuelve a ponerte de pie y estira los brazos. Un ejercicio cardiovascular de cuerpo completo.", img: "https://i.imgur.com/tH3aL5P.gif", category: "Potencia" },
@@ -276,21 +336,21 @@ const planData = {
             rounds: "4-5",
             hiit_duration: 30,
             days: {
-                "1": { title: "Día 1: Complejos de Fuerza", exercises: [
+                "day1": { title: "Día 1: Complejos de Fuerza", exercises: [
                     { name: "Sentadilla Pistola (asistida)", desc: "Sujétate al marco de una puerta o una silla y realiza una sentadilla a una pierna. La máxima expresión de fuerza y equilibrio unilateral.", img: "https://i.imgur.com/L4DbDqs.gif", category: "Fuerza" },
                     { name: "Flexión Arquero", desc: "Desde una posición de flexión ancha, desplaza el peso hacia un lado, estirando el otro brazo. Un paso previo a la flexión a una mano.", img: "https://i.imgur.com/o0scH67.gif", category: "Fuerza" },
                     { name: "Plancha a Plancha Baja", desc: "Desde plancha de manos, baja a plancha de codos y vuelve a subir. Alterna el brazo que inicia. Resistencia y estabilidad.", img: "https://i.imgur.com/zAUmE4a.gif", category: "Core" },
                     { name: "Remo Renegado (con garrafas)", desc: "En posición de plancha sobre dos garrafas de agua, rema alternativamente cada una. Un reto total para el core y la espalda.", img: "https://i.imgur.com/uNlq3sF.gif", category: "Fuerza" },
                     { name: "Elevación de Piernas (Tumbado)", desc: "Boca arriba, levanta las piernas rectas hasta 90 grados y bájalas lentamente. Fortalece la parte baja del abdomen.", img: "https://i.imgur.com/L3TYgko.gif", category: "Core" }
                 ]},
-                "2": { title: "Día 2: Agilidad y Resistencia Total", exercises: [
+                "day2": { title: "Día 2: Agilidad y Resistencia Total", exercises: [
                     { name: "Zancada con Salto", desc: "Desde una posición de zancada, salta y cambia las piernas en el aire. Exige control y potencia.", img: "https://i.imgur.com/BvLvhM4.gif", category: "Potencia" },
                     { name: "Flexión Hindú", desc: "Desde pica, baja en un movimiento fluido hasta una cobra y vuelve. Combina movilidad, fuerza y flujo.", img: "https://i.imgur.com/L79pY5M.gif", category: "Coordinación" },
                     { name: "Oso Gateando (Bear Crawl)", desc: "A gatas con las rodillas flotando, avanza coordinando brazo y pierna opuestos. Mejora la coordinación y la fuerza del core.", img: "https://i.imgur.com/gK9o9b0.gif", category: "Coordinación" },
                     { name: "Sentadilla Cosaca", desc: "Desde una postura amplia, desplaza el peso a un lado, bajando la cadera y manteniendo la otra pierna estirada. Movilidad y fuerza lateral.", img: "https://i.imgur.com/mO2P2j1.gif", category: "Movilidad" },
                     { name: "Abdominales en V (V-Ups)", desc: "Tumbado, levanta simultáneamente torso y piernas para formar una 'V' con tu cuerpo. Un ejercicio avanzado para el abdomen.", img: "https://i.imgur.com/e5j2jYw.gif", category: "Core" }
                 ]},
-                "3": { title: "Día 3: Reto de Calistenia", exercises: [
+                "day3": { title: "Día 3: Reto de Calistenia", exercises: [
                     { name: "Paseo por la Pared (Wall Walk)", desc: "Empieza en plancha con los pies en la pared y camina con las manos hacia ella, elevando la cadera. El camino hacia el handstand.", img: "https://i.imgur.com/wVbKQzP.gif", category: "Fuerza" },
                     { name: "Flexión a una Mano (negativa)", desc: "Baja lo más lento que puedas usando solo un brazo. Ayúdate con ambos para subir. Construye la fuerza para el movimiento completo.", img: "https://i.imgur.com/S9s4F16.gif", category: "Fuerza" },
                     { name: "Plancha Superman", desc: "En posición de plancha, extiende un brazo y la pierna opuesta. Máxima tensión y control del core.", img: "https://i.imgur.com/s6wJ7c3.gif", category: "Core" },
@@ -303,7 +363,6 @@ const planData = {
 };
 
     let completedDays = {};
-    let currentDisplayDate = new Date();
     const STORAGE_KEY = 'workoutProgress';
 
     const planContent = document.getElementById('plan-content');
@@ -315,7 +374,19 @@ const planData = {
     const modalDesc = document.getElementById('modal-desc');
     const modalClose = document.getElementById('modal-close');
     const modalTags = document.getElementById('modal-tags');
+    const assignmentModal = document.getElementById('assignment-modal');
+    const assignmentTitle = document.getElementById('assignment-title');
+    const assignmentDateEl = document.getElementById('assignment-date');
+    const assignmentOptionsEl = document.getElementById('assignment-options');
+    const cancelAssignmentBtn = document.getElementById('cancel-assignment');
+    const deleteAssignmentBtn = document.getElementById('delete-assignment');
+    const viewToggle = document.getElementById('view-toggle');
+    const calendarContainer = document.getElementById('calendar-container');
+
     let currentChart = null;
+    let complianceChart = null;
+    let isFullView = false;
+    let planningViewDate = new Date();
     
     const categoryColors = {
         "Fuerza": "bg-orange-200/20 text-orange-400",
@@ -350,6 +421,13 @@ const planData = {
         modal.querySelector('.modal-content').classList.remove('open');
         document.body.style.overflow = 'auto';
     }
+    
+    function hideAssignmentModal() {
+        assignmentModal.classList.remove('open');
+        assignmentModal.querySelector('.modal-content').classList.remove('open');
+        document.body.style.overflow = 'auto';
+    }
+
 
     modalClose.addEventListener('click', hideModal);
     modal.addEventListener('click', (e) => {
@@ -357,7 +435,9 @@ const planData = {
             hideModal();
         }
     });
-
+    
+    cancelAssignmentBtn.addEventListener('click', hideAssignmentModal);
+    
     function createExerciseCard(exercise) {
         const card = document.createElement('div');
         card.className = 'exercise-card bg-gray-800/50 p-3 rounded-xl shadow-lg flex items-center gap-4 cursor-pointer hover:shadow-2xl hover:ring-2 hover:ring-orange-500 transition-all duration-300 transform hover:-translate-y-1 group';
@@ -373,13 +453,17 @@ const planData = {
         return card;
     }
     
-    function renderDay(month, day) {
-        const monthData = planData.months[month];
-        const dayData = monthData.days[day];
+    function renderDay(month, dayKey) {
+        const dayData = planData.months[month].days[dayKey];
         const warmupData = planData.warmups[month];
         const cooldownData = planData.cooldowns[month];
         const workoutDetails = document.getElementById('workout-details');
         
+        if (!dayData) {
+            workoutDetails.innerHTML = `<div class="text-center text-slate-400 p-8 bg-gray-800/30 rounded-xl">Haz clic en un día del calendario para programar o ver un entrenamiento.</div>`;
+            return;
+        }
+
         workoutDetails.innerHTML = `
             <div class="space-y-4">
                 <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
@@ -446,119 +530,88 @@ const planData = {
 
     function renderPlan(month) {
         const monthData = planData.months[month];
-        planContent.classList.remove('fade-in');
-        planContent.classList.add('initial-hidden');
-        
-        setTimeout(() => {
-            planContent.innerHTML = `
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-slate-200">${monthData.title}</h2>
-                    <p class="text-md text-slate-400 mt-1"><strong>Intervalo:</strong> ${monthData.interval} | <strong>Rondas:</strong> ${monthData.rounds}</p>
+        planContent.innerHTML = `
+            <div id="workout-details">
+                <div class="text-center text-slate-400 p-8 bg-gray-800/30 rounded-xl">Haz clic en un día del calendario para programar o ver un entrenamiento.</div>
+            </div>
+            <div id="chart-section" class="mt-12 accordion-item rounded-xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold text-center mb-4 text-slate-100">Distribución de la Sesión - Mes ${month}</h3>
+                <div class="chart-container" style="height: 200px; max-width: 200px; margin: auto;">
+                    <canvas id="session-chart"></canvas>
                 </div>
-                <div id="days-nav" class="flex justify-center gap-2 md:gap-4 mb-8"></div>
-                <div id="workout-details"></div>
-                <div id="chart-section" class="mt-12 accordion-item rounded-xl shadow-lg p-6">
-                    <h3 class="text-2xl font-bold text-center mb-4 text-slate-100">Distribución de la Sesión</h3>
-                    <div class="chart-container">
-                        <canvas id="session-chart"></canvas>
-                    </div>
-                    <div id="chart-legend" class="mt-4 flex justify-center gap-4 text-sm flex-wrap text-slate-300"></div>
-                </div>
-            `;
+                <div id="chart-legend" class="mt-4 flex justify-center gap-4 text-sm flex-wrap text-slate-300"></div>
+            </div>
+        `;
 
-            const daysNav = document.getElementById('days-nav');
-            Object.keys(monthData.days).forEach(dayKey => {
-                const dayBtn = document.createElement('button');
-                dayBtn.className = 'day-btn py-2 px-5 rounded-full font-semibold shadow-lg transition-all duration-300 transform hover:scale-105';
-                dayBtn.textContent = `Día ${dayKey}`;
-                dayBtn.dataset.day = dayKey;
-                dayBtn.dataset.month = month;
-                daysNav.appendChild(dayBtn);
-            });
-            
-            planContent.addEventListener('click', e => {
-                const dayTarget = e.target.closest('.day-btn');
-                if(dayTarget){
-                    renderDay(dayTarget.dataset.month, dayTarget.dataset.day);
-                    document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
-                    dayTarget.classList.add('active');
-                    return;
-                }
-
-                const cardTarget = e.target.closest('.exercise-card');
-                if(cardTarget){
-                    const exerciseName = cardTarget.dataset.exerciseName;
-                    const allExercises = [...planData.warmups[1],...planData.warmups[2],...planData.warmups[3], ...planData.cooldowns[1],...planData.cooldowns[2],...planData.cooldowns[3]];
-                    Object.values(planData.months).forEach(m => Object.values(m.days).forEach(d => allExercises.push(...d.exercises)));
-                    const exercise = allExercises.find(ex => ex.name === exerciseName);
-                    showModal(exercise);
-                }
-            });
-            
-            daysNav.querySelector('.day-btn').click();
-            planContent.classList.add('fade-in');
-
-            if (currentChart) {
-                currentChart.destroy();
+        planContent.addEventListener('click', e => {
+            const cardTarget = e.target.closest('.exercise-card');
+            if(cardTarget){
+                const exerciseName = cardTarget.dataset.exerciseName;
+                const allExercises = [...planData.warmups[1],...planData.warmups[2],...planData.warmups[3], ...planData.cooldowns[1],...planData.cooldowns[2],...planData.cooldowns[3]];
+                Object.values(planData.months).forEach(m => Object.values(m.days).forEach(d => allExercises.push(...d.exercises)));
+                const exercise = allExercises.find(ex => ex.name === exerciseName);
+                showModal(exercise);
             }
-            const ctx = document.getElementById('session-chart').getContext('2d');
-            const legendContainer = document.getElementById('chart-legend');
-            legendContainer.innerHTML = ''; 
-            
-            const chartStructure = [
-                { label: 'Calentamiento', duration: 15, color: 'rgba(251, 146, 60, 0.7)' },
-                { label: 'HIIT', duration: monthData.hiit_duration, color: 'rgba(249, 115, 22, 0.9)' },
-                { label: 'Enfriamiento', duration: 10, color: 'rgba(234, 88, 12, 0.8)' }
-            ];
+        });
+        
+        if (currentChart) {
+            currentChart.destroy();
+        }
+        const ctx = document.getElementById('session-chart').getContext('2d');
+        const legendContainer = document.getElementById('chart-legend');
+        legendContainer.innerHTML = ''; 
+        
+        const chartStructure = [
+            { label: 'Calentamiento', duration: 15, color: 'rgba(251, 146, 60, 0.7)' },
+            { label: 'HIIT', duration: monthData.hiit_duration, color: 'rgba(249, 115, 22, 0.9)' },
+            { label: 'Enfriamiento', duration: 10, color: 'rgba(234, 88, 12, 0.8)' }
+        ];
 
-            const chartData = {
-                labels: chartStructure.map(s => s.label),
-                datasets: [{
-                    data: chartStructure.map(s => s.duration),
-                    backgroundColor: chartStructure.map(s => s.color),
-                    borderColor: '#1f2937',
-                    borderWidth: 0,
-                    hoverOffset: 8,
-                    hoverBorderColor: '#111827'
-                }]
-            };
+        const chartData = {
+            labels: chartStructure.map(s => s.label),
+            datasets: [{
+                data: chartStructure.map(s => s.duration),
+                backgroundColor: chartStructure.map(s => s.color),
+                borderColor: '#1f2937',
+                borderWidth: 0,
+                hoverOffset: 8,
+                hoverBorderColor: '#111827'
+            }]
+        };
 
-            currentChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: chartData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            enabled: true,
-                            backgroundColor: '#1f2937',
-                            titleFont: { size: 16, weight: 'bold'},
-                            bodyFont: { size: 14, color: '#d1d5db' },
-                            padding: 12,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: (context) => `${context.label}: ${context.raw} min (aprox.)`
-                            }
+        currentChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: '#1f2937',
+                        titleFont: { size: 16, weight: 'bold'},
+                        bodyFont: { size: 14, color: '#d1d5db' },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: (context) => `${context.label}: ${context.raw} min (aprox.)`
                         }
                     }
                 }
-            });
+            }
+        });
 
-            chartData.labels.forEach((label, index) => {
-                const legendItem = document.createElement('div');
-                legendItem.className = 'flex items-center';
-                legendItem.innerHTML = `
-                    <span class="w-3 h-3 rounded-full mr-2" style="background-color: ${chartData.datasets[0].backgroundColor[index]}"></span>
-                    <span>${label}</span>
-                `;
-                legendContainer.appendChild(legendItem);
-            });
-
-
-        }, 300);
+        chartData.labels.forEach((label, index) => {
+            const legendItem = document.createElement('div');
+            legendItem.className = 'flex items-center';
+            legendItem.innerHTML = `
+                <span class="w-3 h-3 rounded-full mr-2" style="background-color: ${chartData.datasets[0].backgroundColor[index]}"></span>
+                <span>${label}</span>
+            `;
+            legendContainer.appendChild(legendItem);
+        });
     }
 
     monthTabs.forEach(tab => {
@@ -576,10 +629,7 @@ const planData = {
         });
     });
     
-    // Calendar Logic using localStorage
-    const monthYearEl = document.getElementById('month-year');
-    const calendarGridEl = document.getElementById('calendar-grid');
-
+    // Calendar Logic
     function loadProgress() {
         const data = localStorage.getItem(STORAGE_KEY);
         completedDays = data ? JSON.parse(data) : {};
@@ -587,62 +637,422 @@ const planData = {
 
     function saveProgress() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(completedDays));
+        updateAnalytics();
     }
 
-    function renderCalendar() {
-        calendarGridEl.innerHTML = '';
-        const year = currentDisplayDate.getFullYear();
-        const month = currentDisplayDate.getMonth();
-        monthYearEl.textContent = `${currentDisplayDate.toLocaleString('es-ES', { month: 'long' })} ${year}`;
-
-        const firstDayOfMonth = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        for (let i = 0; i < firstDayOfMonth; i++) {
-            calendarGridEl.innerHTML += `<div class="other-month"></div>`;
+    function renderCalendars(scrollToToday = false) {
+        if(isFullView){
+            renderFullCalendar();
+        } else {
+            renderTimelineCalendar(scrollToToday);
         }
+    }
 
-        for (let i = 1; i <= daysInMonth; i++) {
+    function renderTimelineCalendar(scrollToToday = false) {
+        const timelineEl = calendarContainer.querySelector('#timeline-calendar');
+        const scrollPosition = timelineEl ? timelineEl.scrollLeft : 0;
+        
+        calendarContainer.innerHTML = `<div id="timeline-calendar" class="timeline-container flex items-center gap-2 p-2 overflow-x-auto"></div>`;
+        const newTimelineEl = document.getElementById('timeline-calendar');
+        newTimelineEl.innerHTML = '';
+        
+        const today = new Date();
+        const startDate = new Date();
+        startDate.setDate(today.getDate() - 182);
+
+        for (let i = 0; i < 365; i++) {
+            const day = new Date(startDate);
+            day.setDate(startDate.getDate() + i);
+            const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+            
             const dayEl = document.createElement('div');
-            dayEl.textContent = i;
-            dayEl.className = 'calendar-day';
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+            dayEl.className = 'timeline-day flex flex-col justify-center items-center';
             dayEl.dataset.date = dateStr;
-            if (completedDays[dateStr]) {
-                dayEl.classList.add('completed');
+            dayEl.innerHTML = `
+                <span class="text-xs uppercase">${day.toLocaleString('es-ES', { weekday: 'short' })}</span>
+                <span class="text-2xl font-bold">${day.getDate()}</span>
+            `;
+
+            const planStartDate = localStorage.getItem('workoutStartDate');
+            if (planStartDate && day < new Date(planStartDate + 'T00:00:00')) {
+                dayEl.classList.add('out-of-range');
             }
-            calendarGridEl.appendChild(dayEl);
+
+            if (completedDays[dateStr]) {
+                 if(completedDays[dateStr].completed){
+                    dayEl.classList.add('completed');
+                 } else {
+                    dayEl.classList.add('scheduled', completedDays[dateStr].workout);
+                 }
+            }
+            if(day.toDateString() === new Date().toDateString()){
+                 dayEl.classList.add('today');
+            }
+            if(dateStr === planStartDate) {
+                dayEl.classList.add('start-date');
+            }
+            newTimelineEl.appendChild(dayEl);
+        }
+        if(scrollToToday) {
+            setTimeout(() => {
+                const todayEl = document.querySelector('.timeline-day.today');
+                if(todayEl) {
+                    todayEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }
+            }, 100);
+        } else if (scrollPosition) {
+            newTimelineEl.scrollLeft = scrollPosition;
         }
     }
+    
+    function renderFullCalendar() {
+        let planStartDate = localStorage.getItem('workoutStartDate');
+        let rangeEndDate = null;
+        if(planStartDate) {
+            rangeEndDate = new Date(planStartDate);
+            rangeEndDate.setDate(rangeEndDate.getDate() + 83);
+        }
 
-    document.getElementById('prev-month').addEventListener('click', () => {
-        currentDisplayDate.setMonth(currentDisplayDate.getMonth() - 1);
-        renderCalendar();
-    });
+        calendarContainer.innerHTML = `
+            <div class="flex justify-between items-center mb-4">
+                 <button id="prev-block-btn" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&lt; 3 Meses</button>
+                 <h4 id="planning-view-header" class="text-lg font-bold text-center text-amber-400"></h4>
+                 <button id="next-block-btn" class="p-2 rounded-full hover:bg-gray-700 transition-colors">3 Meses &gt;</button>
+            </div>
+            <div id="planning-grid-container" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+            <div id="plan-end-date-info" class="text-center text-slate-400 text-sm mt-4 h-5 flex justify-center items-center gap-4"></div>
+        `;
 
-    document.getElementById('next-month').addEventListener('click', () => {
-        currentDisplayDate.setMonth(currentDisplayDate.getMonth() + 1);
-        renderCalendar();
+        const planningGridContainer = document.getElementById('planning-grid-container');
+        let date = new Date(planningViewDate);
+        date.setDate(1);
+
+        for (let i = 0; i < 3; i++) {
+            const monthDiv = document.createElement('div');
+            const monthHeader = document.createElement('h4');
+            monthHeader.className = 'text-md font-bold text-center text-white mb-2';
+            monthHeader.textContent = date.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+            monthDiv.appendChild(monthHeader);
+
+            const grid = document.createElement('div');
+            grid.className = 'grid grid-cols-7 gap-1 text-center text-xs text-slate-400 mb-1';
+            ['D', 'L', 'M', 'X', 'J', 'V', 'S'].forEach(day => grid.innerHTML += `<span>${day}</span>`);
+            monthDiv.appendChild(grid);
+            
+            const daysGrid = document.createElement('div');
+            daysGrid.className = 'grid grid-cols-7 gap-1';
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let j = 0; j < firstDayOfMonth; j++) {
+                daysGrid.innerHTML += `<div></div>`;
+            }
+
+            for (let j = 1; j <= daysInMonth; j++) {
+                const dayEl = document.createElement('div');
+                const currentDate = new Date(year, month, j);
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(j).padStart(2, '0')}`;
+                dayEl.className = 'grid-day';
+                dayEl.textContent = j;
+                dayEl.dataset.date = dateStr;
+
+                if (completedDays[dateStr]) {
+                    if (completedDays[dateStr].completed) dayEl.classList.add('completed');
+                    else dayEl.classList.add('scheduled', completedDays[dateStr].workout);
+                }
+                if (currentDate.toDateString() === new Date().toDateString()) dayEl.classList.add('today');
+
+                if(planStartDate) {
+                    const startDateObj = new Date(planStartDate + 'T00:00:00');
+                    if (currentDate >= startDateObj && currentDate <= rangeEndDate) {
+                        dayEl.classList.add('in-range');
+                    } else {
+                         dayEl.classList.add('out-of-range');
+                    }
+                     if(dateStr === planStartDate) dayEl.classList.add('start-date');
+                }
+                
+                daysGrid.appendChild(dayEl);
+            }
+            monthDiv.appendChild(daysGrid);
+            planningGridContainer.appendChild(monthDiv);
+            date.setMonth(date.getMonth() + 1);
+        }
+
+        document.getElementById('prev-block-btn').addEventListener('click', () => {
+            planningViewDate.setMonth(planningViewDate.getMonth() - 3);
+            renderFullCalendar();
+        });
+        document.getElementById('next-block-btn').addEventListener('click', () => {
+            planningViewDate.setMonth(planningViewDate.getMonth() + 3);
+            renderFullCalendar();
+        });
+
+        const infoContainer = document.getElementById('plan-end-date-info');
+        infoContainer.innerHTML = '';
+        if(planStartDate){
+             infoContainer.innerHTML = `<span>Tu plan de 12 semanas termina el ${rangeEndDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.</span> <button id="reset-start-date" class="text-xs bg-yellow-800/80 text-yellow-300 px-2 py-1 rounded-md hover:bg-yellow-700">Resetear Inicio</button>`;
+             document.getElementById('reset-start-date').addEventListener('click', () => {
+                localStorage.removeItem('workoutStartDate');
+                renderCalendars();
+                updateAnalytics();
+             });
+        } else {
+             infoContainer.textContent = 'Haz clic en un día para establecer el inicio de tu plan de 12 semanas.';
+        }
+        if (Object.keys(completedDays).length > 0) {
+            const clearBtn = document.createElement('button');
+            clearBtn.id = 'clear-all-marks';
+            clearBtn.className = 'text-xs bg-red-800/80 text-red-300 px-2 py-1 rounded-md hover:bg-red-700 ml-2';
+            clearBtn.textContent = 'Limpiar Todo';
+            clearBtn.onclick = showClearAllConfirmation;
+             infoContainer.appendChild(clearBtn);
+        }
+    }
+    
+    viewToggle.addEventListener('change', () => {
+        isFullView = viewToggle.checked;
+        const dot = document.querySelector('.dot');
+        dot.style.transform = isFullView ? 'translateX(1.5rem)' : 'translateX(0)';
+        planningViewDate = new Date();
+        renderCalendars(true);
     });
     
-    calendarGridEl.addEventListener('click', e => {
-        const target = e.target.closest('.calendar-day');
+    calendarContainer.addEventListener('click', e => {
+        const target = e.target.closest('.timeline-day, .grid-day');
         if (target && target.dataset.date) {
-            const date = target.dataset.date;
-            if (completedDays[date]) {
-                delete completedDays[date];
-            } else {
-                completedDays[date] = true;
-            }
-            saveProgress();
-            renderCalendar();
+            handleDayClick(target.dataset.date);
         }
     });
+
+    function handleDayClick(date) {
+        const entry = completedDays[date];
+        const activeMonth = document.querySelector('.month-tab.tab-active').dataset.month;
+        const monthWorkouts = planData.months[activeMonth].days;
+        const planStartDate = localStorage.getItem('workoutStartDate');
+        const clickedDate = new Date(date + 'T00:00:00');
+
+        if(planStartDate && clickedDate < new Date(planStartDate + 'T00:00:00')) {
+            return;
+        }
+
+        assignmentDateEl.textContent = clickedDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        assignmentOptionsEl.innerHTML = '';
+        deleteAssignmentBtn.style.display = 'none';
+
+        if (!isFullView) { // --- PROGRESS VIEW LOGIC ---
+            if (entry) {
+                entry.completed = !entry.completed;
+                saveProgress();
+                renderCalendars(false);
+                renderDay(entry.month, entry.workout);
+            } else {
+                assignmentTitle.textContent = "Programar Entrenamiento";
+                 if (!planStartDate) {
+                    const startPlanBtn = document.createElement('button');
+                    startPlanBtn.className = 'w-full p-3 bg-green-600 rounded-lg text-white font-semibold hover:bg-green-500 transition-colors';
+                    startPlanBtn.textContent = 'Establecer como Primer Día del Plan';
+                    startPlanBtn.onclick = () => {
+                        localStorage.setItem('workoutStartDate', date);
+                        renderCalendars(false);
+                        hideAssignmentModal();
+                    }
+                    assignmentOptionsEl.appendChild(startPlanBtn);
+                }
+                Object.keys(monthWorkouts).forEach(dayKey => {
+                    const optionBtn = document.createElement('button');
+                    optionBtn.className = 'w-full p-3 bg-gray-700 rounded-lg text-white font-semibold hover:bg-orange-600 transition-colors';
+                    optionBtn.textContent = `Programar: ${monthWorkouts[dayKey].title}`;
+                    optionBtn.onclick = () => {
+                        if (!localStorage.getItem('workoutStartDate')) {
+                            localStorage.setItem('workoutStartDate', date);
+                        }
+                        completedDays[date] = { workout: dayKey, completed: false, month: activeMonth };
+                        saveProgress();
+                        renderCalendars(false);
+                        hideAssignmentModal();
+                    };
+                    assignmentOptionsEl.appendChild(optionBtn);
+                });
+                assignmentModal.classList.add('open');
+                assignmentModal.querySelector('.modal-content').classList.add('open');
+            }
+            return;
+        }
+
+        // --- PLANNING VIEW LOGIC ---
+        assignmentTitle.textContent = "Acciones de Planificación";
+        if (entry) {
+             const unmarkBtn = document.createElement('button');
+             unmarkBtn.className = 'w-full p-3 bg-yellow-600 rounded-lg text-white font-semibold hover:bg-yellow-500 transition-colors';
+             unmarkBtn.textContent = "Desmarcar Día (Volver a Programado)";
+             unmarkBtn.onclick = () => {
+                entry.completed = false;
+                saveProgress();
+                renderCalendars();
+                hideAssignmentModal();
+             };
+             if(entry.completed) assignmentOptionsEl.appendChild(unmarkBtn);
+
+             deleteAssignmentBtn.style.display = 'block';
+             deleteAssignmentBtn.onclick = () => {
+                delete completedDays[date];
+                saveProgress();
+                renderCalendars();
+                hideAssignmentModal();
+            };
+        } else {
+             if (!planStartDate) {
+                const startPlanBtn = document.createElement('button');
+                startPlanBtn.className = 'w-full p-3 bg-green-600 rounded-lg text-white font-semibold hover:bg-green-500 transition-colors';
+                startPlanBtn.textContent = `Establecer como Primer Día`;
+                startPlanBtn.onclick = () => {
+                    localStorage.setItem('workoutStartDate', date);
+                    renderCalendars();
+                    hideAssignmentModal();
+                };
+                assignmentOptionsEl.appendChild(startPlanBtn);
+            }
+            Object.keys(monthWorkouts).forEach(dayKey => {
+                const optionBtn = document.createElement('button');
+                optionBtn.className = 'w-full p-3 bg-gray-700 rounded-lg text-white font-semibold hover:bg-orange-600 transition-colors';
+                optionBtn.textContent = `Programar: ${monthWorkouts[dayKey].title}`;
+                optionBtn.onclick = () => {
+                    if (!localStorage.getItem('workoutStartDate')) {
+                        localStorage.setItem('workoutStartDate', date);
+                    }
+                    completedDays[date] = { workout: dayKey, completed: false, month: activeMonth };
+                    saveProgress();
+                    renderCalendars();
+                    hideAssignmentModal();
+                };
+                assignmentOptionsEl.appendChild(optionBtn);
+            });
+        }
+        
+        assignmentModal.classList.add('open');
+        assignmentModal.querySelector('.modal-content').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function showClearAllConfirmation() {
+        assignmentTitle.textContent = "¿Borrar Todo el Progreso?";
+        assignmentDateEl.textContent = "Esta acción eliminará todas tus marcas y la fecha de inicio del plan. No se puede deshacer.";
+        assignmentOptionsEl.innerHTML = '';
+        
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'w-full p-3 bg-red-600 rounded-lg text-white font-semibold hover:bg-red-500 transition-colors';
+        confirmBtn.textContent = "Sí, Limpiar Todo";
+        confirmBtn.onclick = () => {
+            completedDays = {};
+            localStorage.removeItem('workoutStartDate');
+            saveProgress();
+            renderCalendars();
+            hideAssignmentModal();
+        };
+        assignmentOptionsEl.appendChild(confirmBtn);
+
+        deleteAssignmentBtn.style.display = 'none';
+        assignmentModal.classList.add('open');
+        assignmentModal.querySelector('.modal-content').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function updateAnalytics(){
+        const totalWorkoutsEl = document.getElementById('total-workouts');
+        const totalComplianceEl = document.getElementById('total-compliance');
+        const perfectStreakEl = document.getElementById('perfect-streak');
+        
+        const completedOnly = Object.keys(completedDays).filter(date => completedDays[date] && completedDays[date].completed).sort();
+        
+        if(completedOnly.length === 0) {
+            totalWorkoutsEl.textContent = '0';
+            totalComplianceEl.textContent = '0%';
+            perfectStreakEl.textContent = '0';
+            if(complianceChart) {
+                complianceChart.destroy();
+                complianceChart = null;
+            }
+            return;
+        }
+        
+        totalWorkoutsEl.textContent = completedOnly.length;
+        
+        const startDateString = localStorage.getItem('workoutStartDate') || completedOnly[0];
+        const startDate = new Date(startDateString + 'T00:00:00');
+        const firstDayOfWeek = new Date(startDate);
+        firstDayOfWeek.setDate(startDate.getDate() - (startDate.getDay() === 0 ? 6 : startDate.getDay() - 1));
+
+        const weeklyData = Array(12).fill(0);
+        const weekLabels = Array.from({length: 12}, (_, i) => `S${i + 1}`);
+
+        completedOnly.forEach(dayStr => {
+            const day = new Date(dayStr + 'T00:00:00');
+            const weekIndex = Math.floor((day - firstDayOfWeek) / (1000 * 60 * 60 * 24 * 7));
+            if(weekIndex >= 0 && weekIndex < 12) {
+                weeklyData[weekIndex]++;
+            }
+        });
+        
+        const today = new Date();
+        const weeksPassed = Math.ceil(Math.max(1, (today - firstDayOfWeek) / (1000 * 60 * 60 * 24 * 7)));
+        const possibleWorkouts = weeksPassed * 3;
+        const compliance = possibleWorkouts > 0 ? Math.min(100, (completedOnly.length / possibleWorkouts) * 100).toFixed(0) : 0;
+        totalComplianceEl.textContent = `${compliance}%`;
+        
+        let currentStreak = 0;
+        let streakEnded = false;
+        for(let i = weeksPassed - 1; i >= 0; i--){
+             if(weeklyData[i] >= 3 && !streakEnded) {
+                 currentStreak++;
+             } else if (weeklyData[i] < 3) {
+                 streakEnded = true; 
+             }
+        }
+        perfectStreakEl.textContent = currentStreak;
+
+        if (complianceChart) complianceChart.destroy();
+        const ctx = document.getElementById('compliance-chart').getContext('2d');
+        complianceChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: weekLabels,
+                datasets: [{
+                    label: 'Entrenamientos por Semana',
+                    data: weeklyData,
+                    backgroundColor: weeklyData.map(d => d >= 3 ? '#f97316' : 'rgba(251, 146, 60, 0.7)'),
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 4,
+                        ticks: { stepSize: 1, color: '#9ca3af' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    },
+                    x: {
+                         ticks: { color: '#9ca3af' },
+                         grid: { display: false }
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
 
     // Initial Load
     loadProgress();
-    renderCalendar();
-    document.querySelectorAll('.initial-hidden').forEach((el, index) => {
+    renderCalendars(true);
+    updateAnalytics();
+    
+    document.querySelectorAll('header, .sticky, #progress-section').forEach((el, index) => {
+        el.classList.add('initial-hidden');
         setTimeout(() => {
             el.classList.add('fade-in');
         }, 100 * (index + 1));
@@ -653,4 +1063,3 @@ const planData = {
 </script>
 </body>
 </html>
-
