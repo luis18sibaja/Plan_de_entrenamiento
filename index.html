@@ -6,25 +6,25 @@
     <title>Plan de Entrenamiento Progresivo: 3 Meses</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Paleta de Colores: Fuego y Ceniza -->
     <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            scroll-behavior: smooth; 
-            background-color: #111827; 
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+            background-color: #111827;
             color: #e5e7eb;
         }
-        .tab-active { 
-            background-color: #f97316; 
-            color: white; 
+        .tab-active {
+            background-color: #f97316;
+            color: white;
             box-shadow: 0 5px 20px rgba(249, 115, 22, 0.4);
         }
-        .tab-inactive { 
-            background-color: transparent; 
-            color: #d1d5db; 
+        .tab-inactive {
+            background-color: transparent;
+            color: #d1d5db;
         }
         .day-btn {
             background-color: #374151;
@@ -40,7 +40,7 @@
         .accordion-item.illuminated {
             box-shadow: 0 0 25px rgba(251, 146, 60, 0.3), inset 0 0 10px rgba(251, 146, 60, 0.1);
         }
-        
+
         /* --- Sistema de Temas de Color --- */
         .day-btn.active { color: white; transform: translateY(-2px); }
 
@@ -51,7 +51,8 @@
         .completed.theme-day1 { background-color: #f97316; box-shadow: 0 0 15px rgba(249, 115, 22, 0.5); }
         .scheduled.theme-day1::after { background-color: #f97316; }
         .assign-btn-day1:hover { background-color: #f97316 !important; }
-        
+        #todays-workout-info .theme-border-day1 { border-color: #f97316; }
+
         /* Tema Día 2: Ámbar Energético */
         .theme-day2 .day-btn.active { background-color: #f59e0b; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); }
         .theme-day2 .accordion-header .theme-marker, .theme-day2 .accordion-icon { color: #f59e0b; }
@@ -59,6 +60,7 @@
         .completed.theme-day2 { background-color: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
         .scheduled.theme-day2::after { background-color: #f59e0b; }
         .assign-btn-day2:hover { background-color: #f59e0b !important; }
+        #todays-workout-info .theme-border-day2 { border-color: #f59e0b; }
 
         /* Tema Día 3: Rojo Potencia */
         .theme-day3 .day-btn.active { background-color: #ef4444; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
@@ -67,6 +69,7 @@
         .completed.theme-day3 { background-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
         .scheduled.theme-day3::after { background-color: #ef4444; }
         .assign-btn-day3:hover { background-color: #ef4444 !important; }
+        #todays-workout-info .theme-border-day3 { border-color: #ef4444; }
         /* --- Fin del Sistema de Temas de Color --- */
 
         .accordion-content {
@@ -159,1037 +162,1119 @@
         .grid-day.in-range { background-color: rgba(55, 65, 81, 0.5); }
         .grid-day.start-date, .timeline-day.start-date { background-color: #fbbf24; color: #111827; }
         .grid-day.out-of-range, .timeline-day.out-of-range { background-color: #1f2937; color: #4b5563; cursor: not-allowed; }
-        
+
         #view-toggle:checked ~ .relative .dot {
             transform: translateX(1.5rem);
             background-color: #f97316;
         }
-    </style>
-</head>
-<body class="antialiased">
+     </style>
+ </head>
+ <body class="antialiased">
 
-    <div id="app" class="max-w-7xl mx-auto p-4 md:p-8">
-        <header class="text-center mb-10 initial-hidden">
-            <h1 class="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 tracking-tight">Tu Viaje de 3 Meses</h1>
-            <p class="text-lg sm:text-xl text-slate-400 mt-2">Plan Progresivo para Movilidad y Fuerza Funcional</p>
-        </header>
+     <div id="app" class="max-w-7xl mx-auto p-4 md:p-8">
+         <header class="text-center mb-10 initial-hidden">
+             <h1 class="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 tracking-tight">Tu Viaje de 3 Meses</h1>
+             <p class="text-lg sm:text-xl text-slate-400 mt-2">Plan Progresivo para Movilidad y Fuerza Funcional</p>
+         </header>
 
-        <div id="main-nav" class="sticky top-4 z-40 bg-[#111827]/80 backdrop-blur-sm py-4 initial-hidden">
-            <div class="w-full bg-gray-700 rounded-full h-3 mb-4 shadow-inner">
-                <div id="progress-bar" class="bg-gradient-to-r from-amber-500 to-orange-600 h-3 rounded-full progress-bar-fill" style="width: 33.33%"></div>
-            </div>
-            <nav class="flex justify-center p-1 bg-gray-800/80 rounded-full shadow-lg">
-                <button data-month="1" class="month-tab flex-1 py-3 px-2 text-center font-semibold text-sm sm:text-lg transition-all duration-300 rounded-full tab-active">Mes 1: Adaptación</button>
-                <button data-month="2" class="month-tab flex-1 py-3 px-2 text-center font-semibold text-sm sm:text-lg transition-all duration-300 rounded-full tab-inactive">Mes 2: Intensificación</button>
-                <button data-month="3" class="month-tab flex-1 py-3 px-2 text-center font-semibold text-sm sm:text-lg transition-all duration-300 rounded-full tab-inactive">Mes 3: Potencia</button>
-            </nav>
-        </div>
-        
-        <main id="plan-content" class="transition-opacity duration-500 mt-8">
-        </main>
-        
-        <section id="progress-section" class="mt-12 initial-hidden">
-             <div class="bg-gray-800/50 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-700">
-                <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-                    <h2 class="text-2xl lg:text-3xl font-bold text-slate-200">Planificador</h2>
-                    <label for="view-toggle" class="flex items-center cursor-pointer flex-shrink-0">
-                        <span id="view-label-left" class="mr-3 text-sm font-medium">Progreso</span>
-                        <div class="relative">
-                            <input type="checkbox" id="view-toggle" class="sr-only">
-                            <div class="block bg-gray-600 w-14 h-8 rounded-full">
-                                <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
-                            </div>
-                        </div>
-                        <span id="view-label-right" class="ml-3 text-sm font-medium">Planificación</span>
-                    </label>
-                </div>
-
-                <div id="calendar-container"></div>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mt-8">
-                    <div class="lg:col-span-3">
-                         <h3 class="text-lg sm:text-xl font-bold text-white mb-4 text-center lg:text-left">Análisis de Cumplimiento (12 Semanas)</h3>
-                        <div class="chart-container h-64">
-                            <canvas id="compliance-chart"></canvas>
-                        </div>
-                    </div>
-                    <div class="lg:col-span-2 space-y-4">
-                         <h3 class="text-lg sm:text-xl font-bold text-white mb-4 text-center lg:text-left">Inteligencia de Entrenamiento</h3>
-                         <div class="bg-gray-900/50 p-4 rounded-xl">
-                            <p class="text-sm text-slate-400">Cumplimiento Total</p>
-                            <p id="total-compliance" class="text-3xl font-extrabold text-amber-400">0%</p>
-                        </div>
-                         <div class="bg-gray-900/50 p-4 rounded-xl">
-                            <p class="text-sm text-slate-400">Racha de Semanas Perfectas</p>
-                            <p id="perfect-streak" class="text-3xl font-extrabold text-orange-500">0</p>
-                        </div>
-                         <div class="bg-gray-900/50 p-4 rounded-xl">
-                            <p class="text-sm text-slate-400">Entrenamientos Totales</p>
-                            <p id="total-workouts" class="text-3xl font-extrabold text-white">0</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </div>
-
-    <div id="exercise-modal" class="modal-backdrop fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-        <div class="modal-content bg-[#1f2937] border border-gray-700 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div class="p-2 text-right">
-                 <button id="modal-close" class="text-slate-400 hover:text-red-500 transition-colors text-5xl leading-none">&times;</button>
-            </div>
-            <div class="p-4 md:p-6 pt-0">
-                 <img id="modal-img" src="" alt="Demostración del ejercicio" class="w-full h-auto object-cover rounded-xl shadow-lg mb-4" onerror="this.onerror=null;this.src='https://placehold.co/600x400/111827/d1d5db?text=Imagen+no+disponible';">
-                <div class="flex flex-col h-full">
-                    <div id="modal-tags" class="mb-3"></div>
-                    <h3 id="modal-title" class="text-2xl md:text-3xl font-extrabold text-white mb-2"></h3>
-                    <div class="w-16 h-1.5 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full mb-4"></div>
-                    <p id="modal-desc" class="text-slate-300 leading-relaxed overflow-y-auto"></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="assignment-modal" class="modal-backdrop fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-        <div class="modal-content bg-[#1f2937] border border-gray-700 rounded-2xl shadow-2xl w-full max-w-md">
-             <div class="p-6 text-center">
-                <h3 id="assignment-title" class="text-xl sm:text-2xl font-bold text-white mb-4"></h3>
-                <p id="assignment-date" class="text-slate-400 mb-6"></p>
-                <div id="assignment-options" class="space-y-3"></div>
-                <button id="delete-assignment" class="hidden mt-4 w-full p-3 bg-red-800/50 rounded-lg text-red-400 font-semibold hover:bg-red-700/50 transition-colors">Borrar Programación</button>
-                <button id="cancel-assignment" class="mt-6 text-slate-400 hover:text-white">Cancelar</button>
+         <div id="main-nav" class="sticky top-4 z-40 bg-[#111827]/80 backdrop-blur-sm py-4 initial-hidden">
+             <div class="w-full bg-gray-700 rounded-full h-3 mb-4 shadow-inner">
+                 <div id="progress-bar" class="bg-gradient-to-r from-amber-500 to-orange-600 h-3 rounded-full progress-bar-fill" style="width: 33.33%"></div>
              </div>
-        </div>
-    </div>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
+             <nav class="flex justify-center p-1 bg-gray-800/80 rounded-full shadow-lg">
+                 <button data-month="1" class="month-tab flex-1 py-3 px-2 text-center font-semibold text-sm sm:text-lg transition-all duration-300 rounded-full tab-active">Mes 1: Adaptación</button>
+                 <button data-month="2" class="month-tab flex-1 py-3 px-2 text-center font-semibold text-sm sm:text-lg transition-all duration-300 rounded-full tab-inactive">Mes 2: Intensificación</button>
+                 <button data-month="3" class="month-tab flex-1 py-3 px-2 text-center font-semibold text-sm sm:text-lg transition-all duration-300 rounded-full tab-inactive">Mes 3: Potencia</button>
+             </nav>
+         </div>
 
-// --- DATOS DEL PLAN DE ENTRENAMIENTO ---
-const planData = {
-    warmups: {
-        "1": [
-            { name: "Respiración Diafragmática", desc: "Tumbado boca arriba, inhala profundo por la nariz (4s), siente cómo se expande tu abdomen, no el pecho. Sostén (2s) y exhala lentamente por la boca (6s). Repite por 2-3 minutos.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2Z0eXNsa2RtaGs4aTRlM2ZxM2Z2b2pucXFqaHNxcnRibXkxYTVpNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/27c3yD3aAI36pYd95n/giphy.gif", category: "Movilidad" },
-            { name: "Gato-Vaca", reps: "15 reps", desc: "A gatas, inhala mientras arqueas la espalda y miras al frente (Vaca). Exhala mientras redondeas la columna y metes la barbilla (Gato).", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExb214M2s2b3VwaHk4eWl6eDN6a2d0dHZ0ZmJpNHNqYjZocG5zZzB0ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VbnUQpnihPSaVFnqHe/giphy.gif", category: "Movilidad" },
-            { name: "Bird-Dog", reps: "10 reps x lado", desc: "A gatas, contrae el abdomen y extiende un brazo al frente y la pierna opuesta hacia atrás. Mantén 3 segundos.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN3Rtb3N5eTd4bndxb3E0cHp6cjJzcGZkaHhiMXdvaWtsemZta2JvcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7WTDH9g8h13l42M8/giphy.gif", category: "Core" },
-            { name: "Rotaciones Torácicas Cuadrúpedas", reps: "10 reps x lado", desc: "A gatas, una mano en la nuca. Rota el codo hacia el techo, abriendo el pecho.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbHRhOW55emM4ZXR2NXRoZzM3b3g2c3E0eWd6amFtcjRyeGNoMzdoZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/StKiS6x69pgk1r1fhG/giphy.gif", category: "Movilidad"}
-        ],
-        "2": [
-            { name: "Círculos de Brazos y Piernas", reps: "10 por dirección", desc: "De pie, realiza círculos amplios y controlados con los brazos y piernas.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExemRjN2RkM2NjbHYzNWs0cmk0OHlqbGtiNmJzZDk4a2ZqamM5M2Z2ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/J06U94T1yA1J3w2y9W/giphy.gif", category: "Movilidad" },
-            { name: "Sentadilla Profunda con Rotación", reps: "8 reps x lado", desc: "Baja a una sentadilla profunda. Apoya un codo en la rodilla y rota el otro brazo hacia el techo.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTVsczZpZWFyMXV1OHB6MGQ3MTI4dnYzbnZpdThldnRzZzVjNmg1aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/1BfS103n2wFj2/giphy.gif", category: "Movilidad" },
-            { name: "Plancha con Pasos Laterales", reps: "20 pasos totales", desc: "En plancha alta, da pequeños pasos laterales con manos y pies.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbHN1aXc1eGFtdzU2dWVmaDUyOGQ1N3M1OHM3cmNybjI1ZWZqbmx1NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Ier1HoPq36Yve/giphy.gif", category: "Core" },
-            { name: "Bisagra de Cadera (Good Morning)", reps: "15 reps", desc: "De pie, manos en la nuca, empuja la cadera hacia atrás manteniendo la espalda recta.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZtdmFxanowY2hncXp1dGk5eHk5cHJ0eTVwbnFpMDZtczJuMDU0dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7aD2v3Q0T6nInA0U/giphy.gif", category: "Fuerza" }
-        ],
-        "3": [
-            { name: "Saltos de Tijera (Jumping Jacks)", reps: "30 segundos", desc: "Un clásico para elevar el ritmo cardíaco y calentar todo el cuerpo.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzh6d296anRocG5uZXdmbnA0N3lrY3Njd3Z4eHZlcG0yZ3J0cmc5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Potencia" },
-            { name: "Sentadilla a Zancada Inversa", reps: "8 reps x lado", desc: "Realiza una sentadilla, y al subir, lleva una pierna directamente hacia atrás a una zancada.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGk1MmM5aXp5M3hxYXBpOTJ5eG53NHRjc2c3aWdyN2M5MWRtdnUwMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/s3tC8iA64J2rS/giphy.gif", category: "Coordinación" },
-            { name: "Plancha a Perro Boca Abajo", reps: "12 reps", desc: "Desde plancha alta, eleva la cadera hacia el techo (Perro Boca Abajo) y vuelve.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHh3aWF0cjVwNDI2cGk3OXl4eGVhNXBndW13ZG5vYnljZjh5NnhvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zd5C68u21Pj1tYdYx/giphy.gif", category: "Movilidad" },
-            { name: "Paseo del Monstruo (con banda)", reps: "10 pasos x lado", desc: "Con minibanda en las rodillas, da pasos laterales en media sentadilla.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2d1ZnBvOWg0b2l0aTF3Z2lhcWk1N2VwYzZocnBnaDRnaWVmYm9oNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/J1uMvyh4tU3Cg/giphy.gif", category: "Fuerza" }
-        ]
-    },
-    cooldowns: {
-        "1": [
-            { name: "Estiramiento de Isquiotibiales", reps: "45 seg x lado", desc: "Sentado, una pierna estirada, inclínate hacia adelante desde la cadera.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3d6dWcyMnM2ZnAwbTlsMnV4ejg0aTR6MmY4azlqajZocnhxaG13NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6wNq9R31342qj32g/giphy.gif", category: "Flexibilidad" },
-            { name: "Estiramiento de Cuádriceps (de pie)", reps: "45 seg x lado", desc: "De pie, lleva el talón al glúteo, manteniendo las rodillas juntas.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzYycjJzb2Vnc3ZpaXR2bnJ3aDVqZ2xha2Q0cjlhcHg5ZWlmdndraSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/osl16i05s8acmYI2A2/giphy.gif", category: "Flexibilidad" },
-            { name: "Postura del Niño", reps: "60 seg", desc: "Lleva la cadera hacia los talones y extiende los brazos al frente.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWZjbzQ3cnV0NDB4NWVjbjlqNDZ6ZmZ2c2U5c3JvMTh0b2tqemV2NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4ZeD0ig26WNSk/giphy.gif", category: "Flexibilidad" },
-            { name: "Torsión Espinal (tumbado)", reps: "45 seg x lado", desc: "Tumbado, lleva una rodilla al pecho y luego crúzala por encima del cuerpo.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdyamk2amVmd2d5NGI3OWJpN2t0NTY1M2N0eDViMDl4eTd5MnFrMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0O9A6A3j2g0aZ3gI/giphy.gif", category: "Movilidad" }
-        ],
-        "2": [
-            { name: "Estiramiento de la Paloma", reps: "60 seg x lado", desc: "Estiramiento profundo para el glúteo y el psoas.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzdwZHpnaXk3bTJqNHJ5ZnM1NW1nNXdxdjQzZnducHFlMzlhY2k1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Flexibilidad" },
-            { name: "Estiramiento de Aductores (Mariposa)", reps: "60 seg", desc: "Sentado, junta las plantas de los pies y presiona las rodillas hacia el suelo.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWw0eDlyZDVwbmE2am1iNmNlZXN5dmVvOGI0enRncDFja2ZqYXN4bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oB1vUAcH4S3Is/giphy.gif", category: "Flexibilidad" },
-            { name: "Estiramiento de Hombro Cruzado", reps: "45 seg x brazo", desc: "Lleva un brazo recto a través del pecho y presiona suavemente con el otro.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3FucjB6aDNscTh0NXFmOGp1dzQ1dnlvMWQ2dzFmMG1wYm5sMHdqeiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYxV67D3t1Cscuc/giphy.gif", category: "Flexibilidad" },
-            { name: "Postura del Perro Boca Abajo", reps: "60 seg", desc: "Desde plancha, eleva la cadera al techo. Estira toda la cadena posterior.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHh3aWF0cjVwNDI2cGk3OXl4eGVhNXBndW13ZG5vYnljZjh5NnhvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zd5C68u21Pj1tYdYx/giphy.gif", category: "Movilidad" }
-        ],
-        "3": [
-            { name: "Estiramiento del 'Couch Stretch'", reps: "60 seg x lado", desc: "Coloca una rodilla en la esquina de una pared. El estiramiento más efectivo para cuádriceps y psoas.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdyamk2amVmd2d5NGI3OWJpN2t0NTY1M2N0eDViMDl4eTd5MnFrMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0O9A6A3j2g0aZ3gI/giphy.gif", category: "Flexibilidad" },
-            { name: "Estiramiento de la Rana", reps: "60 seg", desc: "A gatas, separa las rodillas lo más que puedas para un estiramiento profundo de aductores.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZtdmFxanowY2hncXp1dGk5eHk5cHJ0eTVwbnFpMDZtczJuMDU0dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7aD2v3Q0T6nInA0U/giphy.gif", category: "Flexibilidad" },
-            { name: "Estiramiento de Tríceps sobre la Cabeza", reps: "45 seg x brazo", desc: "Flexiona un codo por detrás de la cabeza y presiona suavemente con la otra mano.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzdwZHpnaXk3bTJqNHJ5ZnM1NW1nNXdxdjQzZnducHFlMzlhY2k1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Flexibilidad" },
-            { name: "Estiramiento de Muñecas y Antebrazos", reps: "30 seg cada posición", desc: "A gatas, apoya las palmas y luego el dorso de las manos para estirar.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2Z0eXNsa2RtaGs4aTRlM2ZxM2Z2b2pucXFqaHNxcnRibXkxYTVpNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/27c3yD3aAI36pYd95n/giphy.gif", category: "Movilidad" }
-        ]
-    },
-    months: {
-        "1": {
-            title: "Mes 1: Adaptación y Técnica",
-            interval: "40s trabajo / 20s descanso", rounds: "3-4", hiit_duration: 20,
-            days: {
-                "day1": { title: "Día 1: Empuje y Core", theme: "day1", exercises: [
-                    { name: "Sentadilla (Peso Corporal)", desc: "Espalda recta, baja la cadera como si te sentaras.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZtdmFxanowY2hncXp1dGk5eHk5cHJ0eTVwbnFpMDZtczJuMDU0dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7aD2v3Q0T6nInA0U/giphy.gif", category: "Fuerza" },
-                    { name: "Flexiones Inclinadas", desc: "Manos en un banco o pared. A menor inclinación, mayor dificultad.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2d1ZnBvOWg0b2l0aTF3Z2lhcWk1N2VwYzZocnBnaDRnaWVmYm9oNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/J1uMvyh4tU3Cg/giphy.gif", category: "Fuerza" },
-                    { name: "Plancha Frontal", desc: "Cuerpo en línea recta de talones a cabeza.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHh3aWF0cjVwNDI2cGk3OXl4eGVhNXBndW13ZG5vYnljZjh5NnhvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zd5C68u21Pj1tYdYx/giphy.gif", category: "Core" },
-                    { name: "Remo con Toalla", desc: "Sentado, pasa una toalla por tus pies y tira de ella, retrayendo las escápulas.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbHN1aXc1eGFtdzU2dWVmaDUyOGQ1N3M1OHM3cmNybjI1ZWZqbmx1NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Ier1HoPq36Yve/giphy.gif", category: "Fuerza" },
-                    { name: "Puente de Glúteos", desc: "Eleva la cadera contrayendo los glúteos.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTVsczZpZWFyMXV1OHB6MGQ3MTI4dnYzbnZpdThldnRzZzVjNmg1aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/1BfS103n2wFj2/giphy.gif", category: "Fuerza" }
-                ]},
-                "day2": { title: "Día 2: Tracción y Resistencia", theme: "day2", exercises: [
-                    { name: "Zancadas Alternas", desc: "Da un paso largo y baja la rodilla de atrás casi hasta el suelo.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbHRhOW55emM4ZXR2NXRoZzM3b3g2c3E0eWd6amFtcjRyeGNoMzdoZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/StKiS6x69pgk1r1fhG/giphy.gif", category: "Fuerza" },
-                    { name: "Dominadas Australianas", desc: "Con una barra baja o mesa resistente. Tira del pecho hacia la barra.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN3Rtb3N5eTd4bndxb3E0cHp6cjJzcGZkaHhiMXdvaWtsemZta2JvcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7WTDH9g8h13l42M8/giphy.gif", category: "Fuerza" },
-                    { name: "Escaladores (Controlados)", desc: "En posición de plancha, lleva las rodillas al pecho lentamente.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExb214M2s2b3VwaHk4eWl6eDN6a2d0dHZ0ZmJpNHNqYjZocG5zZzB0ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VbnUQpnihPSaVFnqHe/giphy.gif", category: "Core" },
-                    { name: "Peso Muerto Rumano (sin peso)", desc: "Concéntrate en la bisagra de cadera, espalda recta.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2Z0eXNsa2RtaGs4aTRlM2ZxM2Z2b2pucXFqaHNxcnRibXkxYTVpNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/27c3yD3aAI36pYd95n/giphy.gif", category: "Movilidad" },
-                    { name: "Plancha Lateral", reps: "20s por lado", desc: "Mantén el cuerpo en una línea recta lateral.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExemRjN2RkM2NjbHYzNWs0cmk0OHlqbGtiNmJzZDk4a2ZqamM5M2Z2ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/J06U94T1yA1J3w2y9W/giphy.gif", category: "Core" }
-                ]},
-                "day3": { title: "Día 3: Full Body y Transferencia", theme: "day3", exercises: [
-                    { name: "Levantamiento Turco (Parcial)", desc: "Practica solo hasta el paso de apoyarte en la mano y elevar la cadera.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGk1MmM5aXp5M3hxYXBpOTJ5eG53NHRjc2c3aWdyN2M5MWRtdnUwMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/s3tC8iA64J2rS/giphy.gif", category: "Coordinación" },
-                    { name: "Swing (con mochila)", desc: "Movimiento explosivo de cadera.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzh6d296anRocG5uZXdmbnA0N3lrY3Njd3Z4eHZlcG0yZ3J0cmc5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Potencia" },
-                    { name: "Caminata del Granjero", desc: "Coge peso en cada mano y camina con la espalda recta.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdyamk2amVmd2d5NGI3OWJpN2t0NTY1M2N0eDViMDl4eTd5MnFrMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0O9A6A3j2g0aZ3gI/giphy.gif", category: "Fuerza" },
-                    { name: "Subidas al Cajón/Escalón", desc: "Alterna subir a una superficie elevada. Controla la bajada.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3d6dWcyMnM2ZnAwbTlsMnV4ejg0aTR6MmY4azlqajZocnhxaG13NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6wNq9R31342qj32g/giphy.gif", category: "Fuerza" },
-                    { name: "Press Pallof (con banda)", desc: "Con banda elástica, extiéndela al frente, resistiendo la rotación.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzYycjJzb2Vnc3ZpaXR2bnJ3aDVqZ2xha2Q0cjlhcHg5ZWlmdndraSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/osl16i05s8acmYI2A2/giphy.gif", category: "Core" }
-                ]}
-            }
-        },
-        "2": {
-            title: "Mes 2: Intensificación",
-            interval: "45s trabajo / 15s descanso", rounds: "4", hiit_duration: 25,
-            days: {
-                "day1": { title: "Día 1: Fuerza Unilateral", theme: "day1", exercises: [
-                    { name: "Sentadilla Búlgara", desc: "Pie trasero elevado en una silla. Reta el equilibrio y la fuerza.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWZjbzQ3cnV0NDB4NWVjbjlqNDZ6ZmZ2c2U5c3JvMTh0b2tqemV2NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4ZeD0ig26WNSk/giphy.gif", category: "Fuerza" },
-                    { name: "Flexiones con Liberación de Manos", desc: "Baja hasta el suelo, levanta las manos brevemente y empuja explosivamente.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzdwZHpnaXk3bTJqNHJ5ZnM1NW1nNXdxdjQzZnducHFlMzlhY2k1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Potencia" },
-                    { name: "Plancha con Alcance", desc: "En plancha, extiende un brazo hacia adelante sin rotar las caderas.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWw0eDlyZDVwbmE2am1iNmNlZXN5dmVvOGI0enRncDFja2ZqYXN4bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oB1vUAcH4S3Is/giphy.gif", category: "Core" },
-                    { name: "Remo a una Mano (con mochila)", desc: "Inclínate con la espalda recta, apoya una mano en una silla y rema.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3FucjB6aDNscTh0NXFmOGp1dzQ1dnlvMWQ2dzFmMG1wYm5sMHdqeiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYxV67D3t1Cscuc/giphy.gif", category: "Fuerza" },
-                    { name: "Elevación de Cadera a una Pierna", desc: "Puente de glúteos, pero con una pierna extendida.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHh3aWF0cjVwNDI2cGk3OXl4eGVhNXBndW13ZG5vYnljZjh5NnhvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zd5C68u21Pj1tYdYx/giphy.gif", category: "Fuerza" }
-                ]},
-                "day2": { title: "Día 2: Resistencia y Core Avanzado", theme: "day2", exercises: [
-                    { name: "Zancada Inversa con Elevación", desc: "Da un paso atrás en una zancada y al volver, eleva la rodilla al pecho.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGk1MmM5aXp5M3hxYXBpOTJ5eG53NHRjc2c3aWdyN2M5MWRtdnUwMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/s3tC8iA64J2rS/giphy.gif", category: "Coordinación" },
-                    { name: "Flexiones en Pica", desc: "Desde una 'V' invertida, baja la cabeza hacia el suelo. Trabaja los hombros.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzh6d296anRocG5uZXdmbnA0N3lrY3Njd3Z4eHZlcG0yZ3J0cmc5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Fuerza" },
-                    { name: "Plancha Spiderman", desc: "En plancha, lleva la rodilla hacia el codo del mismo lado.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdyamk2amVmd2d5NGI3OWJpN2t0NTY1M2N0eDViMDl4eTd5MnFrMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0O9A6A3j2g0aZ3gI/giphy.gif", category: "Core" },
-                    { name: "Buenos Días (sin peso)", desc: "De pie, manos en la nuca. Realiza una bisagra de cadera.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzYycjJzb2Vnc3ZpaXR2bnJ3aDVqZ2xha2Q0cjlhcHg5ZWlmdndraSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/osl16i05s8acmYI2A2/giphy.gif", category: "Fuerza" },
-                    { name: "Limpia Parabrisas (Tumbado)", desc: "Boca arriba, piernas a 90 grados. Déjalas caer de lado a lado.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWZjbzQ3cnV0NDB4NWVjbjlqNDZ6ZmZ2c2U5c3JvMTh0b2tqemV2NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4ZeD0ig26WNSk/giphy.gif", category: "Core" }
-                ]},
-                "day3": { title: "Día 3: Potencia y Coordinación", theme: "day3", exercises: [
-                    { name: "Sentadilla con Salto", desc: "Realiza una sentadilla y salta explosivamente. Aterriza suavemente.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzdwZHpnaXk3bTJqNHJ5ZnM1NW1nNXdxdjQzZnducHFlMzlhY2k1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Potencia" },
-                    { name: "Flexiones Declinadas", desc: "Pies elevados en una silla. Mayor énfasis en pecho superior y hombros.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWw0eDlyZDVwbmE2am1iNmNlZXN5dmVvOGI0enRncDFja2ZqYXN4bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oB1vUAcH4S3Is/giphy.gif", category: "Fuerza" },
-                    { name: "Burpee (sin flexión)", desc: "Baja a plancha, vuelve a ponerte de pie y estira los brazos.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3FucjB6aDNscTh0NXFmOGp1dzQ1dnlvMWQ2dzFmMG1wYm5sMHdqeiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYxV67D3t1Cscuc/giphy.gif", category: "Potencia" },
-                    { name: "Paseo del Cangrejo", desc: "Sentado, manos y pies en el suelo, eleva la cadera y camina.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHh3aWF0cjVwNDI2cGk3OXl4eGVhNXBndW13ZG5vYnljZjh5NnhvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zd5C68u21Pj1tYdYx/giphy.gif", category: "Coordinación" },
-                    { name: "Toques al Talón (Tumbado)", desc: "Boca arriba, toca alternativamente cada talón.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGk1MmM5aXp5M3hxYXBpOTJ5eG53NHRjc2c3aWdyN2M5MWRtdnUwMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/s3tC8iA64J2rS/giphy.gif", category: "Core" }
-                ]}
-            }
-        },
-        "3": {
-            title: "Mes 3: Potencia y Flujo",
-            interval: "50s trabajo / 10s descanso", rounds: "4-5", hiit_duration: 30,
-            days: {
-                "day1": { title: "Día 1: Complejos de Fuerza", theme: "day1", exercises: [
-                    { name: "Sentadilla Pistola (asistida)", desc: "Sujétate a una puerta y realiza una sentadilla a una pierna.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzh6d296anRocG5uZXdmbnA0N3lrY3Njd3Z4eHZlcG0yZ3J0cmc5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Fuerza" },
-                    { name: "Flexión Arquero", desc: "Desde una posición de flexión ancha, desplaza el peso hacia un lado.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdyamk2amVmd2d5NGI3OWJpN2t0NTY1M2N0eDViMDl4eTd5MnFrMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0O9A6A3j2g0aZ3gI/giphy.gif", category: "Fuerza" },
-                    { name: "Plancha a Plancha Baja", desc: "Desde plancha de manos, baja a plancha de codos y vuelve a subir.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzYycjJzb2Vnc3ZpaXR2bnJ3aDVqZ2xha2Q0cjlhcHg5ZWlmdndraSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/osl16i05s8acmYI2A2/giphy.gif", category: "Core" },
-                    { name: "Remo Renegado (con garrafas)", desc: "En posición de plancha sobre garrafas, rema alternativamente.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWZjbzQ3cnV0NDB4NWVjbjlqNDZ6ZmZ2c2U5c3JvMTh0b2tqemV2NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4ZeD0ig26WNSk/giphy.gif", category: "Fuerza" },
-                    { name: "Elevación de Piernas (Tumbado)", desc: "Boca arriba, levanta las piernas rectas y bájalas lentamente.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzdwZHpnaXk3bTJqNHJ5ZnM1NW1nNXdxdjQzZnducHFlMzlhY2k1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Core" }
-                ]},
-                "day2": { title: "Día 2: Agilidad y Resistencia Total", theme: "day2", exercises: [
-                    { name: "Zancada con Salto", desc: "Desde una posición de zancada, salta y cambia las piernas en el aire.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWw0eDlyZDVwbmE2am1iNmNlZXN5dmVvOGI0enRncDFja2ZqYXN4bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oB1vUAcH4S3Is/giphy.gif", category: "Potencia" },
-                    { name: "Flexión Hindú", desc: "Desde pica, baja en un movimiento fluido hasta una cobra y vuelve.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3FucjB6aDNscTh0NXFmOGp1dzQ1dnlvMWQ2dzFmMG1wYm5sMHdqeiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYxV67D3t1Cscuc/giphy.gif", category: "Coordinación" },
-                    { name: "Oso Gateando (Bear Crawl)", desc: "A gatas con las rodillas flotando, avanza coordinando brazo y pierna opuestos.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHh3aWF0cjVwNDI2cGk3OXl4eGVhNXBndW13ZG5vYnljZjh5NnhvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zd5C68u21Pj1tYdYx/giphy.gif", category: "Coordinación" },
-                    { name: "Sentadilla Cosaca", desc: "Desde una postura amplia, desplaza el peso a un lado, bajando la cadera.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGk1MmM5aXp5M3hxYXBpOTJ5eG53NHRjc2c3aWdyN2M5MWRtdnUwMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/s3tC8iA64J2rS/giphy.gif", category: "Movilidad" },
-                    { name: "Abdominales en V (V-Ups)", desc: "Tumbado, levanta simultáneamente torso y piernas para formar una 'V'.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzh6d296anRocG5uZXdmbnA0N3lrY3Njd3Z4eHZlcG0yZ3J0cmc5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Core" }
-                ]},
-                "day3": { title: "Día 3: Reto de Calistenia", theme: "day3", exercises: [
-                    { name: "Paseo por la Pared (Wall Walk)", desc: "En plancha con los pies en la pared, camina con las manos hacia ella.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdyamk2amVmd2d5NGI3OWJpN2t0NTY1M2N0eDViMDl4eTd5MnFrMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0O9A6A3j2g0aZ3gI/giphy.gif", category: "Fuerza" },
-                    { name: "Flexión a una Mano (negativa)", desc: "Baja lo más lento que puedas usando solo un brazo.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzYycjJzb2Vnc3ZpaXR2bnJ3aDVqZ2xha2Q0cjlhcHg5ZWlmdndraSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/osl16i05s8acmYI2A2/giphy.gif", category: "Fuerza" },
-                    { name: "Plancha Superman", desc: "En plancha, extiende un brazo y la pierna opuesta.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWZjbzQ3cnV0NDB4NWVjbjlqNDZ6ZmZ2c2U5c3JvMTh0b2tqemV2NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4ZeD0ig26WNSk/giphy.gif", category: "Core" },
-                    { name: "Sentadilla Camarón (asistida)", desc: "Sujeta un pie por detrás y baja en una sentadilla con la otra pierna.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzdwZHpnaXk3bTJqNHJ5ZnM1NW1nNXdxdjQzZnducHFlMzlhY2k1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Fuerza" },
-                    { name: "L-Sit (Tuck Sit)", desc: "En el suelo o en paralelas, eleva las rodillas al pecho.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWw0eDlyZDVwbmE2am1iNmNlZXN5dmVvOGI0enRncDFja2ZqYXN4bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oB1vUAcH4S3Is/giphy.gif", category: "Core" }
-                ]}
-            }
-        }
-    }
-};
+         <main id="plan-content" class="transition-opacity duration-500 mt-8">
+         </main>
 
-    // --- VARIABLES GLOBALES Y ELEMENTOS DEL DOM ---
-    let completedDays = {};
-    const STORAGE_KEY = 'workoutProgress';
+         <section id="progress-section" class="mt-12 initial-hidden">
+              <div class="bg-gray-800/50 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-700">
+                 <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                     <h2 class="text-2xl lg:text-3xl font-bold text-slate-200">Planificador</h2>
+                     <label for="view-toggle" class="flex items-center cursor-pointer flex-shrink-0">
+                         <span id="view-label-left" class="mr-3 text-sm font-medium">Progreso</span>
+                         <div class="relative">
+                             <input type="checkbox" id="view-toggle" class="sr-only">
+                             <div class="block bg-gray-600 w-14 h-8 rounded-full">
+                                 <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                             </div>
+                         </div>
+                         <span id="view-label-right" class="ml-3 text-sm font-medium">Planificación</span>
+                     </label>
+                 </div>
 
-    const planContent = document.getElementById('plan-content');
-    const monthTabs = document.querySelectorAll('.month-tab');
-    const progressBar = document.getElementById('progress-bar');
-    const modal = document.getElementById('exercise-modal');
-    const modalTitle = document.getElementById('modal-title');
-    const modalImg = document.getElementById('modal-img');
-    const modalDesc = document.getElementById('modal-desc');
-    const modalTags = document.getElementById('modal-tags');
-    const assignmentModal = document.getElementById('assignment-modal');
-    const assignmentTitle = document.getElementById('assignment-title');
-    const assignmentDateEl = document.getElementById('assignment-date');
-    const assignmentOptionsEl = document.getElementById('assignment-options');
-    const cancelAssignmentBtn = document.getElementById('cancel-assignment');
-    const deleteAssignmentBtn = document.getElementById('delete-assignment');
-    const viewToggle = document.getElementById('view-toggle');
-    const calendarContainer = document.getElementById('calendar-container');
+                 <div id="calendar-container"></div>
+                 <div id="todays-workout-info" class="mt-4"></div>
 
-    let currentChart = null;
-    let complianceChart = null;
-    let isFullView = false;
-    let planningViewDate = new Date();
-    
-    const categoryColors = {
-        "Fuerza": "bg-orange-200/20 text-orange-400", "Core": "bg-yellow-200/20 text-yellow-400",
-        "Movilidad": "bg-green-200/20 text-green-400", "Potencia": "bg-red-200/20 text-red-400",
-        "Coordinación": "bg-sky-200/20 text-sky-400", "Flexibilidad": "bg-purple-200/20 text-purple-400"
-    };
+                 <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mt-8">
+                     <div class="lg:col-span-3">
+                          <h3 class="text-lg sm:text-xl font-bold text-white mb-4 text-center lg:text-left">Análisis de Cumplimiento (12 Semanas)</h3>
+                         <div class="chart-container h-64">
+                             <canvas id="compliance-chart"></canvas>
+                         </div>
+                     </div>
+                     <div class="lg:col-span-2 space-y-4">
+                          <h3 class="text-lg sm:text-xl font-bold text-white mb-4 text-center lg:text-left">Inteligencia de Entrenamiento</h3>
+                          <div class="bg-gray-900/50 p-4 rounded-xl">
+                             <p class="text-sm text-slate-400">Cumplimiento Total</p>
+                             <p id="total-compliance" class="text-3xl font-extrabold text-amber-400">0%</p>
+                         </div>
+                          <div class="bg-gray-900/50 p-4 rounded-xl">
+                             <p class="text-sm text-slate-400">Racha de Semanas Perfectas</p>
+                             <p id="perfect-streak" class="text-3xl font-extrabold text-orange-500">0</p>
+                         </div>
+                          <div class="bg-gray-900/50 p-4 rounded-xl">
+                             <p class="text-sm text-slate-400">Entrenamientos Totales</p>
+                             <p id="total-workouts" class="text-3xl font-extrabold text-white">0</p>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         </section>
 
-    // --- FUNCIONES DE MODALES ---
-    function showModal(exercise) {
-        if (!exercise) return;
-        modalTitle.textContent = exercise.name;
-        modalImg.src = exercise.img;
-        modalDesc.textContent = exercise.desc;
-        
-        modalTags.innerHTML = '';
-        if (exercise.category) {
-            const tag = document.createElement('span');
-            tag.textContent = exercise.category;
-            tag.className = `category-tag ${categoryColors[exercise.category] || 'bg-slate-100 text-slate-800'}`;
-            modalTags.appendChild(tag);
-        }
+     </div>
 
-        modal.classList.add('open');
-        modal.querySelector('.modal-content').classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
+     <div id="exercise-modal" class="modal-backdrop fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+         <div class="modal-content bg-[#1f2937] border border-gray-700 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+             <div class="p-2 text-right">
+                  <button id="modal-close" class="text-slate-400 hover:text-red-500 transition-colors text-5xl leading-none">&times;</button>
+             </div>
+             <div class="p-4 md:p-6 pt-0">
+                  <img id="modal-img" src="" alt="Demostración del ejercicio" class="w-full h-auto object-cover rounded-xl shadow-lg mb-4" onerror="this.onerror=null;this.src='https://placehold.co/600x400/111827/d1d5db?text=Imagen+no+disponible';">
+                 <div class="flex flex-col h-full">
+                     <div id="modal-tags" class="mb-3"></div>
+                     <h3 id="modal-title" class="text-2xl md:text-3xl font-extrabold text-white mb-2"></h3>
+                     <div class="w-16 h-1.5 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full mb-4"></div>
+                     <p id="modal-desc" class="text-slate-300 leading-relaxed overflow-y-auto"></p>
+                 </div>
+             </div>
+         </div>
+     </div>
 
-    function hideModal() {
-        modal.classList.remove('open');
-        modal.querySelector('.modal-content').classList.remove('open');
-        document.body.style.overflow = 'auto';
-    }
-    
-    function hideAssignmentModal() {
-        assignmentModal.classList.remove('open');
-        assignmentModal.querySelector('.modal-content').classList.remove('open');
-        document.body.style.overflow = 'auto';
-    }
+     <div id="assignment-modal" class="modal-backdrop fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+         <div class="modal-content bg-[#1f2937] border border-gray-700 rounded-2xl shadow-2xl w-full max-w-md">
+              <div class="p-6 text-center">
+                 <h3 id="assignment-title" class="text-xl sm:text-2xl font-bold text-white mb-4"></h3>
+                 <p id="assignment-date" class="text-slate-400 mb-6"></p>
+                 <div id="assignment-options" class="space-y-3"></div>
+                 <button id="delete-assignment" class="hidden mt-4 w-full p-3 bg-red-800/50 rounded-lg text-red-400 font-semibold hover:bg-red-700/50 transition-colors">Borrar Programación</button>
+                 <button id="cancel-assignment" class="mt-6 text-slate-400 hover:text-white">Cancelar</button>
+              </div>
+         </div>
+     </div>
+ <script>
+ document.addEventListener('DOMContentLoaded', () => {
 
-    // --- FUNCIONES DE RENDERIZADO ---
-    function createExerciseCard(exercise) {
-        const card = document.createElement('div');
-        card.className = 'exercise-card bg-gray-800/50 p-3 rounded-xl shadow-lg flex items-center gap-4 cursor-pointer hover:shadow-2xl hover:ring-2 hover:ring-orange-500 transition-all duration-300 transform hover:-translate-y-1 group';
-        card.dataset.exerciseName = exercise.name;
-        card.innerHTML = `
-            <img src="${exercise.img}" alt="${exercise.name}" class="w-24 h-24 object-cover rounded-lg bg-slate-700 flex-shrink-0" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/100x100/111827/d1d5db?text=Img';">
-            <div class="flex-grow">
-                <h4 class="font-bold text-lg text-slate-100">${exercise.name}</h4>
-                ${exercise.reps ? `<p class="text-slate-400">${exercise.reps}</p>` : ''}
-            </div>
-            <span class="theme-arrow text-orange-500 font-bold text-3xl transition-transform duration-300 group-hover:translate-x-1">&#8594;</span>
-        `;
-        return card;
-    }
-    
-    function renderDay(month, dayKey) {
-        const dayData = planData.months[month].days[dayKey];
-        const warmupData = planData.warmups[month];
-        const cooldownData = planData.cooldowns[month];
-        const workoutDetails = document.getElementById('workout-details');
-        
-        if (!dayData) {
-            workoutDetails.innerHTML = `<div class="text-center text-slate-400 p-8 bg-gray-800/30 rounded-xl">Entrenamiento no encontrado.</div>`;
-            return;
-        }
+ // --- REGISTRO DE PLUGINS DE CHART.JS ---
+ Chart.register(ChartDataLabels);
 
-        workoutDetails.innerHTML = `
-            <div class="space-y-4">
-                <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
-                    <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
-                        <span><span class="theme-marker font-black mr-2">A</span> Calentamiento y Movilidad</span>
-                        <div class="accordion-icon text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
-                    </button>
-                    <div class="accordion-content">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="warmup-container"></div>
-                    </div>
-                </div>
-                <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
-                    <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
-                        <span><span class="theme-marker font-black mr-2">B</span> Circuito HIIT: ${dayData.title}</span>
-                          <div class="accordion-icon text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
-                    </button>
-                    <div class="accordion-content">
-                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="hiit-container"></div>
-                    </div>
-                </div>
-                <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
-                    <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
-                        <span><span class="theme-marker font-black mr-2">C</span> Enfriamiento y Estiramientos</span>
-                          <div class="accordion-icon text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
-                    </button>
-                    <div class="accordion-content">
-                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="cooldown-container"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        const warmupContainer = document.getElementById('warmup-container');
-        warmupData.forEach(ex => warmupContainer.appendChild(createExerciseCard(ex)));
-        
-        const hiitContainer = document.getElementById('hiit-container');
-        dayData.exercises.forEach(ex => hiitContainer.appendChild(createExerciseCard(ex)));
-
-        const cooldownContainer = document.getElementById('cooldown-container');
-        cooldownData.forEach(ex => cooldownContainer.appendChild(createExerciseCard(ex)));
-        
-        document.querySelectorAll('.accordion-header').forEach(header => {
-            header.addEventListener('click', () => {
-                const item = header.parentElement;
-                const content = header.nextElementSibling;
-                const icon = header.querySelector('.accordion-icon div:last-child');
-                const isOpen = content.classList.contains('open');
-
-                document.querySelectorAll('.accordion-content.open').forEach(openContent => {
-                    if (openContent !== content) {
-                        openContent.classList.remove('open');
-                        const openItem = openContent.parentElement;
-                        openItem.classList.remove('illuminated');
-                        openItem.querySelector('.accordion-icon div:last-child').style.transform = 'rotate(90deg)';
-                    }
-                });
-                
-                content.classList.toggle('open');
-                item.classList.toggle('illuminated');
-                icon.style.transform = content.classList.contains('open') ? 'rotate(0deg)' : 'rotate(90deg)';
-            });
-        });
-    }
-
-    function renderPlan(month) {
-        const monthData = planData.months[month];
-        planContent.innerHTML = `
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-slate-200">${monthData.title}</h2>
-                <p class="text-md text-slate-400 mt-1"><strong>Intervalo:</strong> ${monthData.interval} | <strong>Rondas:</strong> ${monthData.rounds}</p>
-            </div>
-            <div id="days-nav" class="flex justify-center gap-2 md:gap-4 mb-8"></div>
-            <div id="workout-details"></div>
-            <div id="chart-section" class="mt-12 accordion-item rounded-xl shadow-lg p-6">
-                <h3 class="text-2xl font-bold text-center mb-4 text-slate-100">Distribución de la Sesión - Mes ${month}</h3>
-                <div class="chart-container" style="height: 200px; max-width: 200px; margin: auto;">
-                    <canvas id="session-chart"></canvas>
-                </div>
-                <div id="chart-legend" class="mt-4 flex justify-center gap-4 text-sm flex-wrap text-slate-300"></div>
-            </div>
-        `;
-
-        const daysNav = document.getElementById('days-nav');
-        daysNav.innerHTML = '';
-        Object.keys(monthData.days).forEach((dayKey, index) => {
-            const dayBtn = document.createElement('button');
-            dayBtn.className = `day-btn py-2 px-5 rounded-full font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 theme-${dayKey}`;
-            dayBtn.textContent = `Día ${index + 1}`;
-            dayBtn.dataset.day = dayKey;
-            dayBtn.dataset.month = month;
-            daysNav.appendChild(dayBtn);
-        });
-
-        const firstDayButton = daysNav.querySelector('.day-btn');
-        if (firstDayButton) {
-            planContent.classList.remove('theme-day1', 'theme-day2', 'theme-day3');
-            planContent.classList.add(`theme-${firstDayButton.dataset.day}`);
-            firstDayButton.classList.add('active');
-            renderDay(firstDayButton.dataset.month, firstDayButton.dataset.day);
-        }
-        
-        if (currentChart) {
-            currentChart.destroy();
-        }
-        const ctx = document.getElementById('session-chart').getContext('2d');
-        const legendContainer = document.getElementById('chart-legend');
-        legendContainer.innerHTML = ''; 
-        
-        const chartStructure = [
-            { label: 'Calentamiento', duration: 15, color: 'rgba(251, 146, 60, 0.7)' },
-            { label: 'HIIT', duration: monthData.hiit_duration, color: 'rgba(249, 115, 22, 0.9)' },
-            { label: 'Enfriamiento', duration: 10, color: 'rgba(234, 88, 12, 0.8)' }
-        ];
-
-        const chartData = {
-            labels: chartStructure.map(s => s.label),
-            datasets: [{
-                data: chartStructure.map(s => s.duration),
-                backgroundColor: chartStructure.map(s => s.color),
-                borderColor: '#1f2937',
-                borderWidth: 0,
-                hoverOffset: 8,
-                hoverBorderColor: '#111827'
-            }]
-        };
-
-        currentChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: chartData,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        enabled: true,
-                        backgroundColor: '#1f2937',
-                        titleFont: { size: 16, weight: 'bold'},
-                        bodyFont: { size: 14, color: '#d1d5db' },
-                        padding: 12,
-                        cornerRadius: 8,
-                        callbacks: {
-                            label: (context) => `${context.label}: ${context.raw} min (aprox.)`
-                        }
-                    }
-                }
-            }
-        });
-
-        chartData.labels.forEach((label, index) => {
-            const legendItem = document.createElement('div');
-            legendItem.className = 'flex items-center';
-            legendItem.innerHTML = `
-                <span class="w-3 h-3 rounded-full mr-2" style="background-color: ${chartData.datasets[0].backgroundColor[index]}"></span>
-                <span>${label}</span>
-            `;
-            legendContainer.appendChild(legendItem);
-        });
-    }
-
-    // --- LÓGICA DE CALENDARIO Y PROGRESO ---
-    function loadProgress() {
-        const data = localStorage.getItem(STORAGE_KEY);
-        completedDays = data ? JSON.parse(data) : {};
-    }
-
-    function saveProgress() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(completedDays));
-        updateAnalytics();
-    }
-
-    function renderCalendars(smartScroll = false) {
-        if(isFullView){
-            renderFullCalendar();
-        } else {
-            renderTimelineCalendar(smartScroll);
-        }
-    }
-
-    function renderTimelineCalendar(smartScroll = false) {
-        const timelineWrapper = calendarContainer.querySelector('#timeline-wrapper');
-        const scrollPosition = timelineWrapper ? timelineWrapper.querySelector('.timeline-container').scrollLeft : 0;
-        
-        if (!timelineWrapper) {
-            calendarContainer.innerHTML = `
-                <div id="timeline-wrapper">
-                    <div class="flex justify-between items-center mb-2 px-2">
-                        <button id="prev-timeline-month" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&lt;</button>
-                        <h4 id="timeline-month-year" class="text-lg font-bold text-center text-amber-400"></h4>
-                        <button id="next-timeline-month" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&gt;</button>
-                    </div>
-                    <div id="timeline-calendar" class="timeline-container flex items-center gap-2 p-2"></div>
-                </div>
-            `;
-        }
-
-        const timelineEl = document.getElementById('timeline-calendar');
-        const monthYearEl = document.getElementById('timeline-month-year');
-        timelineEl.innerHTML = '';
-        
-        monthYearEl.textContent = planningViewDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
-        
-        const year = planningViewDate.getFullYear();
-        const month = planningViewDate.getMonth();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        for (let i = 1; i <= daysInMonth; i++) {
-            const day = new Date(year, month, i);
-            const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
-            
-            const dayEl = document.createElement('div');
-            dayEl.className = 'timeline-day flex flex-col justify-center items-center';
-            dayEl.dataset.date = dateStr;
-            dayEl.innerHTML = `
-                <span class="text-xs uppercase">${day.toLocaleString('es-ES', { weekday: 'short' })}</span>
-                <span class="text-2xl font-bold">${day.getDate()}</span>
-            `;
-
-            const planStartDate = localStorage.getItem('workoutStartDate');
-            if (planStartDate && day < new Date(planStartDate + 'T00:00:00')) {
-                dayEl.classList.add('out-of-range');
-            }
-
-            if (completedDays[dateStr]) {
-                 const theme = completedDays[dateStr].theme;
-                 if(completedDays[dateStr].completed){
-                    dayEl.classList.add('completed', `theme-${theme}`);
-                 } else {
-                    dayEl.classList.add('scheduled', `theme-${theme}`);
-                 }
-            }
-            if(day.toDateString() === new Date().toDateString()){
-                 dayEl.classList.add('today');
-            }
-            if(dateStr === planStartDate) {
-                dayEl.classList.add('start-date');
-            }
-            timelineEl.appendChild(dayEl);
-        }
-        
-        if(smartScroll) {
-            setTimeout(() => {
-                const today = new Date();
-                const planStartDate = localStorage.getItem('workoutStartDate');
-                let targetEl = null;
-
-                if (planningViewDate.getFullYear() === today.getFullYear() && planningViewDate.getMonth() === today.getMonth()) {
-                    targetEl = document.querySelector('.timeline-day.today');
-                } else if (planStartDate && new Date(planStartDate).getFullYear() === planningViewDate.getFullYear() && new Date(planStartDate).getMonth() === planningViewDate.getMonth()) {
-                    targetEl = document.querySelector('.timeline-day.start-date');
-                }
-
-                if(targetEl) {
-                    targetEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-                } else {
-                     timelineEl.scrollLeft = 0;
-                }
-            }, 100);
-        } else if (scrollPosition !== null) {
-             timelineEl.scrollLeft = scrollPosition;
-        }
-    }
-    
-    function renderFullCalendar() {
-        calendarContainer.innerHTML = `
-            <div class="flex justify-between items-center mb-4">
-                 <button id="prev-block-btn" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&lt; 3 Meses</button>
-                 <h4 id="planning-view-header" class="text-lg font-bold text-center text-amber-400"></h4>
-                 <button id="next-block-btn" class="p-2 rounded-full hover:bg-gray-700 transition-colors">3 Meses &gt;</button>
-            </div>
-            <div id="planning-grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-            <div id="plan-end-date-info" class="text-center text-slate-400 text-sm mt-4 h-5 flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4"></div>
-        `;
-
-        const planningGridContainer = document.getElementById('planning-grid-container');
-        let date = new Date(planningViewDate);
-        date.setDate(1);
-
-        for (let i = 0; i < 3; i++) {
-            const monthDiv = document.createElement('div');
-            const monthHeader = document.createElement('h4');
-            monthHeader.className = 'text-md font-bold text-center text-white mb-2';
-            monthHeader.textContent = date.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
-            monthDiv.appendChild(monthHeader);
-
-            const grid = document.createElement('div');
-            grid.className = 'grid grid-cols-7 gap-1 text-center text-xs text-slate-400 mb-1';
-            ['D', 'L', 'M', 'X', 'J', 'V', 'S'].forEach(day => grid.innerHTML += `<span>${day}</span>`);
-            monthDiv.appendChild(grid);
-            
-            const daysGrid = document.createElement('div');
-            daysGrid.className = 'grid grid-cols-7 gap-1';
-            const year = date.getFullYear();
-            const month = date.getMonth();
-            const firstDayOfMonth = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            for (let j = 0; j < firstDayOfMonth; j++) {
-                daysGrid.innerHTML += `<div></div>`;
-            }
-
-            for (let j = 1; j <= daysInMonth; j++) {
-                const dayEl = document.createElement('div');
-                const currentDate = new Date(year, month, j);
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(j).padStart(2, '0')}`;
-                dayEl.className = 'grid-day';
-                dayEl.textContent = j;
-                dayEl.dataset.date = dateStr;
-
-                if (completedDays[dateStr]) {
-                    const theme = completedDays[dateStr].theme;
-                    if (completedDays[dateStr].completed) dayEl.classList.add('completed', `theme-${theme}`);
-                    else dayEl.classList.add('scheduled', `theme-${theme}`);
-                }
-                if (currentDate.toDateString() === new Date().toDateString()) dayEl.classList.add('today');
-
-                const planStartDate = localStorage.getItem('workoutStartDate');
-                if(planStartDate) {
-                    const startDateObj = new Date(planStartDate + 'T00:00:00');
-                    const rangeEndDate = new Date(startDateObj);
-                    rangeEndDate.setDate(startDateObj.getDate() + 83);
-                    
-                    if (currentDate >= startDateObj && currentDate <= rangeEndDate) {
-                        dayEl.classList.add('in-range');
-                    } else {
-                         dayEl.classList.add('out-of-range');
-                    }
-                     if(dateStr === planStartDate) dayEl.classList.add('start-date');
-                }
-                
-                daysGrid.appendChild(dayEl);
-            }
-            monthDiv.appendChild(daysGrid);
-            planningGridContainer.appendChild(monthDiv);
-            date.setMonth(date.getMonth() + 1);
-        }
-        
-        const infoContainer = document.getElementById('plan-end-date-info');
-        infoContainer.innerHTML = '';
-        const planStartDate = localStorage.getItem('workoutStartDate');
-        
-        if (planStartDate) {
-            const rangeEndDate = new Date(planStartDate);
-            rangeEndDate.setDate(rangeEndDate.getDate() + 83);
-            infoContainer.innerHTML = `<span>Tu plan termina el ${rangeEndDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}.</span> <button id="reset-start-date" class="text-xs bg-yellow-800/80 text-yellow-300 px-2 py-1 rounded-md hover:bg-yellow-700">Resetear Inicio</button>`;
-        } else {
-            infoContainer.textContent = 'Haz clic en un día para establecer el inicio de tu plan de 12 semanas.';
-        }
-
-        if (Object.keys(completedDays).length > 0) {
-            const clearBtn = document.createElement('button');
-            clearBtn.id = 'clear-all-marks';
-            clearBtn.className = 'text-xs bg-red-800/80 text-red-300 px-2 py-1 rounded-md hover:bg-red-700 ml-2';
-            clearBtn.textContent = 'Limpiar Todo';
-            infoContainer.appendChild(clearBtn);
-        }
-    }
-    
-    // --- MANEJADORES DE EVENTOS ---
-    viewToggle.addEventListener('change', () => {
-        isFullView = viewToggle.checked;
-        const dot = document.querySelector('.dot');
-        dot.style.transform = isFullView ? 'translateX(1.5rem)' : 'translateX(0)';
-        planningViewDate = new Date();
-        renderCalendars(true);
-    });
-
-    monthTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const month = tab.dataset.month;
-            renderPlan(month);
-            monthTabs.forEach(t => {
-                t.classList.remove('tab-active');
-                t.classList.add('tab-inactive');
-            });
-            tab.classList.add('tab-active');
-            tab.classList.remove('tab-inactive');
-            
-            progressBar.style.width = `${(parseInt(month) / 3 * 100)}%`;
-        });
-    });
-    
-    calendarContainer.addEventListener('click', e => {
-        const dayTarget = e.target.closest('.timeline-day, .grid-day');
-        if (dayTarget && dayTarget.dataset.date) {
-            handleDayClick(dayTarget.dataset.date);
-            return;
-        }
-
-        const navTargetId = e.target.closest('button')?.id;
-        switch (navTargetId) {
-            case 'prev-timeline-month':
-                planningViewDate.setMonth(planningViewDate.getMonth() - 1);
-                renderTimelineCalendar(true);
-                break;
-            case 'next-timeline-month':
-                planningViewDate.setMonth(planningViewDate.getMonth() + 1);
-                renderTimelineCalendar(true);
-                break;
-            case 'prev-block-btn':
-                planningViewDate.setMonth(planningViewDate.getMonth() - 3);
-                renderFullCalendar();
-                break;
-            case 'next-block-btn':
-                planningViewDate.setMonth(planningViewDate.getMonth() + 3);
-                renderFullCalendar();
-                break;
-            case 'reset-start-date':
-                localStorage.removeItem('workoutStartDate');
-                renderCalendars();
-                updateAnalytics();
-                break;
-            case 'clear-all-marks':
-                showClearAllConfirmation();
-                break;
-        }
-    });
-
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal || e.target.closest('#modal-close')) {
-            hideModal();
-        }
-    });
-
-    cancelAssignmentBtn.addEventListener('click', hideAssignmentModal);
-
-    function handleDayClick(date) {
-        const entry = completedDays[date];
-        const activeMonth = document.querySelector('.month-tab.tab-active').dataset.month;
-        const monthWorkouts = planData.months[activeMonth].days;
-        const planStartDate = localStorage.getItem('workoutStartDate');
-        const clickedDate = new Date(date + 'T00:00:00');
-        const today = new Date();
-        today.setHours(0,0,0,0);
-
-        if(planStartDate && clickedDate < new Date(planStartDate + 'T00:00:00')) {
-            return;
-        }
-        
-        assignmentDateEl.textContent = clickedDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        assignmentOptionsEl.innerHTML = '';
-        deleteAssignmentBtn.style.display = 'none';
-
-        if (!isFullView) { // Vista de Progreso (timeline)
-            if (entry) {
-                entry.completed = !entry.completed;
-                saveProgress();
-                renderCalendars(false);
-                renderDay(entry.month, entry.workout);
-            } else {
-                if (clickedDate < today) return;
-                assignmentTitle.textContent = "Programar Entrenamiento";
-                if (!planStartDate) {
-                    const startPlanBtn = document.createElement('button');
-                    startPlanBtn.className = 'w-full p-3 bg-green-600 rounded-lg text-white font-semibold hover:bg-green-500 transition-colors';
-                    startPlanBtn.textContent = 'Establecer como Primer Día del Plan';
-                    startPlanBtn.onclick = () => {
-                        localStorage.setItem('workoutStartDate', date);
-                        renderCalendars(false);
-                        hideAssignmentModal();
-                    }
-                    assignmentOptionsEl.appendChild(startPlanBtn);
-                }
-                Object.keys(monthWorkouts).forEach(dayKey => {
-                    const optionBtn = document.createElement('button');
-                    optionBtn.className = 'w-full p-3 bg-gray-700 rounded-lg text-white font-semibold transition-colors';
-                    optionBtn.classList.add(`assign-btn-${dayKey}`);
-                    optionBtn.textContent = `Programar: ${monthWorkouts[dayKey].title}`;
-                    optionBtn.onclick = () => {
-                        if (!localStorage.getItem('workoutStartDate')) {
-                            localStorage.setItem('workoutStartDate', date);
-                        }
-                        completedDays[date] = { workout: dayKey, completed: false, month: activeMonth, theme: planData.months[activeMonth].days[dayKey].theme };
-                        saveProgress();
-                        renderCalendars(false);
-                        hideAssignmentModal();
-                    };
-                    assignmentOptionsEl.appendChild(optionBtn);
-                });
-                assignmentModal.classList.add('open');
-                assignmentModal.querySelector('.modal-content').classList.add('open');
-            }
-            return;
-        }
-
-        // Vista de Planificación (3 meses)
-        assignmentTitle.textContent = "Acciones de Planificación";
-        if (entry) {
-             const unmarkBtn = document.createElement('button');
-             unmarkBtn.className = 'w-full p-3 bg-yellow-600 rounded-lg text-white font-semibold hover:bg-yellow-500 transition-colors';
-             unmarkBtn.textContent = "Desmarcar Día (Volver a Programado)";
-             unmarkBtn.onclick = () => {
-                entry.completed = false;
-                saveProgress();
-                renderCalendars();
-                hideAssignmentModal();
-             };
-             if(entry.completed) assignmentOptionsEl.appendChild(unmarkBtn);
-
-             deleteAssignmentBtn.style.display = 'block';
-             deleteAssignmentBtn.onclick = () => {
-                delete completedDays[date];
-                saveProgress();
-                renderCalendars();
-                hideAssignmentModal();
-             };
-        } else {
-             if (!planStartDate) {
-                if(clickedDate >= today) {
-                    const startPlanBtn = document.createElement('button');
-                    startPlanBtn.className = 'w-full p-3 bg-green-600 rounded-lg text-white font-semibold hover:bg-green-500 transition-colors';
-                    startPlanBtn.textContent = `Establecer como Primer Día`;
-                    startPlanBtn.onclick = () => {
-                        localStorage.setItem('workoutStartDate', date);
-                        renderCalendars();
-                        hideAssignmentModal();
-                    };
-                    assignmentOptionsEl.appendChild(startPlanBtn);
-                }
-            }
-            Object.keys(monthWorkouts).forEach(dayKey => {
-                const optionBtn = document.createElement('button');
-                optionBtn.className = 'w-full p-3 bg-gray-700 rounded-lg text-white font-semibold transition-colors';
-                optionBtn.classList.add(`assign-btn-${dayKey}`);
-                optionBtn.textContent = `Programar: ${monthWorkouts[dayKey].title}`;
-                optionBtn.onclick = () => {
-                    if (!localStorage.getItem('workoutStartDate')) {
-                        localStorage.setItem('workoutStartDate', date);
-                    }
-                    completedDays[date] = { workout: dayKey, completed: false, month: activeMonth, theme: planData.months[activeMonth].days[dayKey].theme };
-                    saveProgress();
-                    renderCalendars();
-                    hideAssignmentModal();
-                };
-                assignmentOptionsEl.appendChild(optionBtn);
-            });
-        }
-        
-        assignmentModal.classList.add('open');
-        assignmentModal.querySelector('.modal-content').classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
-    
-    function showClearAllConfirmation() {
-        assignmentTitle.textContent = "¿Borrar Todo el Progreso?";
-        assignmentDateEl.textContent = "Esta acción eliminará todas tus marcas y la fecha de inicio del plan. No se puede deshacer.";
-        assignmentOptionsEl.innerHTML = '';
-        
-        const confirmBtn = document.createElement('button');
-        confirmBtn.className = 'w-full p-3 bg-red-600 rounded-lg text-white font-semibold hover:bg-red-500 transition-colors';
-        confirmBtn.textContent = "Sí, Limpiar Todo";
-        confirmBtn.onclick = () => {
-            completedDays = {};
-            localStorage.removeItem('workoutStartDate');
-            saveProgress();
-            renderCalendars();
-            hideAssignmentModal();
-        };
-        assignmentOptionsEl.appendChild(confirmBtn);
-
-        deleteAssignmentBtn.style.display = 'none';
-        assignmentModal.classList.add('open');
-        assignmentModal.querySelector('.modal-content').classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function updateAnalytics(){
-        const totalWorkoutsEl = document.getElementById('total-workouts');
-        const totalComplianceEl = document.getElementById('total-compliance');
-        const perfectStreakEl = document.getElementById('perfect-streak');
-        
-        const completedOnly = Object.keys(completedDays).filter(date => completedDays[date] && completedDays[date].completed).sort();
-        
-        if(completedOnly.length === 0) {
-            totalWorkoutsEl.textContent = '0';
-            totalComplianceEl.textContent = '0%';
-            perfectStreakEl.textContent = '0';
-            if(complianceChart) {
-                complianceChart.destroy();
-                complianceChart = null;
-            }
-            return;
-        }
-        
-        totalWorkoutsEl.textContent = completedOnly.length;
-        
-        const startDateString = localStorage.getItem('workoutStartDate') || completedOnly[0];
-        const startDate = new Date(startDateString + 'T00:00:00');
-        const firstDayOfWeek = new Date(startDate);
-        firstDayOfWeek.setDate(startDate.getDate() - (startDate.getDay() === 0 ? 6 : startDate.getDay() - 1));
-
-        const weeklyData = Array(12).fill(0);
-        const weekLabels = Array.from({length: 12}, (_, i) => `S${i + 1}`);
-
-        completedOnly.forEach(dayStr => {
-            const day = new Date(dayStr + 'T00:00:00');
-            const weekIndex = Math.floor((day - firstDayOfWeek) / (1000 * 60 * 60 * 24 * 7));
-            if(weekIndex >= 0 && weekIndex < 12) {
-                weeklyData[weekIndex]++;
-            }
-        });
-        
-        const today = new Date();
-        const weeksPassed = Math.ceil(Math.max(1, (today - firstDayOfWeek) / (1000 * 60 * 60 * 24 * 7)));
-        const possibleWorkouts = weeksPassed * 3;
-        const compliance = possibleWorkouts > 0 ? Math.min(100, (completedOnly.length / possibleWorkouts) * 100).toFixed(0) : 0;
-        totalComplianceEl.textContent = `${compliance}%`;
-        
-        let currentStreak = 0;
-        let streakEnded = false;
-        for(let i = weeksPassed - 1; i >= 0; i--){
-             if(weeklyData[i] >= 3 && !streakEnded) {
-                 currentStreak++;
-             } else if (weeklyData[i] < 3) {
-                 streakEnded = true; 
+ // --- DATOS DEL PLAN DE ENTRENAMIENTO ---
+ const planData = {
+     warmups: {
+         "1": [
+             { name: "Respiración Diafragmática", desc: "Tumbado boca arriba, inhala profundo por la nariz (4s), siente cómo se expande tu abdomen, no el pecho. Sostén (2s) y exhala lentamente por la boca (6s). Repite por 2-3 minutos.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2Z0eXNsa2RtaGs4aTRlM2ZxM2Z2b2pucXFqaHNxcnRibXkxYTVpNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/27c3yD3aAI36pYd95n/giphy.gif", category: "Movilidad" },
+             { name: "Gato-Vaca", reps: "15 reps", desc: "A gatas, inhala mientras arqueas la espalda y miras al frente (Vaca). Exhala mientras redondeas la columna y metes la barbilla (Gato).", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExb214M2s2b3VwaHk4eWl6eDN6a2d0dHZ0ZmJpNHNqYjZocG5zZzB0ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VbnUQpnihPSaVFnqHe/giphy.gif", category: "Movilidad" },
+             { name: "Bird-Dog", reps: "10 reps x lado", desc: "A gatas, contrae el abdomen y extiende un brazo al frente y la pierna opuesta hacia atrás. Mantén 3 segundos.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN3Rtb3N5eTd4bndxb3E0cHp6cjJzcGZkaHhiMXdvaWtsemZta2JvcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7WTDH9g8h13l42M8/giphy.gif", category: "Core" },
+             { name: "Rotaciones Torácicas Cuadrúpedas", reps: "10 reps x lado", desc: "A gatas, una mano en la nuca. Rota el codo hacia el techo, abriendo el pecho.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbHRhOW55emM4ZXR2NXRoZzM3b3g2c3E0eWd6amFtcjRyeGNoMzdoZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/StKiS6x69pgk1r1fhG/giphy.gif", category: "Movilidad"}
+         ],
+         "2": [
+             { name: "Círculos de Brazos y Piernas", reps: "10 por dirección", desc: "De pie, realiza círculos amplios y controlados con los brazos y piernas.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExemRjN2RkM2NjbHYzNWs0cmk0OHlqbGtiNmJzZDk4a2ZqamM5M2Z2ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/J06U94T1yA1J3w2y9W/giphy.gif", category: "Movilidad" },
+             { name: "Sentadilla Profunda con Rotación", reps: "8 reps x lado", desc: "Baja a una sentadilla profunda. Apoya un codo en la rodilla y rota el otro brazo hacia el techo.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTVsczZpZWFyMXV1OHB6MGQ3MTI4dnYzbnZpdThldnRzZzVjNmg1aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/1BfS103n2wFj2/giphy.gif", category: "Movilidad" },
+             { name: "Plancha con Pasos Laterales", reps: "20 pasos totales", desc: "En plancha alta, da pequeños pasos laterales con manos y pies.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbHN1aXc1eGFtdzU2dWVmaDUyOGQ1N3M1OHM3cmNybjI1ZWZqbmx1NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Ier1HoPq36Yve/giphy.gif", category: "Core" },
+             { name: "Bisagra de Cadera (Good Morning)", reps: "15 reps", desc: "De pie, manos en la nuca, empuja la cadera hacia atrás manteniendo la espalda recta.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZtdmFxanowY2hncXp1dGk5eHk5cHJ0eTVwbnFpMDZtczJuMDU0dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7aD2v3Q0T6nInA0U/giphy.gif", category: "Fuerza" }
+         ],
+         "3": [
+             { name: "Saltos de Tijera (Jumping Jacks)", reps: "30 segundos", desc: "Un clásico para elevar el ritmo cardíaco y calentar todo el cuerpo.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzh6d296anRocG5uZXdmbnA0N3lrY3Njd3Z4eHZlcG0yZ3J0cmc5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Potencia" },
+             { name: "Sentadilla a Zancada Inversa", reps: "8 reps x lado", desc: "Realiza una sentadilla, y al subir, lleva una pierna directamente hacia atrás a una zancada.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGk1MmM5aXp5M3hxYXBpOTJ5eG53NHRjc2c3aWdyN2M5MWRtdnUwMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/s3tC8iA64J2rS/giphy.gif", category: "Coordinación" },
+             { name: "Plancha a Perro Boca Abajo", reps: "12 reps", desc: "Desde plancha alta, eleva la cadera hacia el techo (Perro Boca Abajo) y vuelve.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHh3aWF0cjVwNDI2cGk3OXl4eGVhNXBndW13ZG5vYnljZjh5NnhvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zd5C68u21Pj1tYdYx/giphy.gif", category: "Movilidad" },
+             { name: "Paseo del Monstruo (con banda)", reps: "10 pasos x lado", desc: "Con minibanda en las rodillas, da pasos laterales en media sentadilla.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2d1ZnBvOWg0b2l0aTF3Z2lhcWk1N2VwYzZocnBnaDRnaWVmYm9oNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/J1uMvyh4tU3Cg/giphy.gif", category: "Fuerza" }
+         ]
+     },
+     cooldowns: {
+         "1": [
+             { name: "Estiramiento de Isquiotibiales", reps: "45 seg x lado", desc: "Sentado, una pierna estirada, inclínate hacia adelante desde la cadera.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3d6dWcyMnM2ZnAwbTlsMnV4ejg0aTR6MmY4azlqajZocnhxaG13NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6wNq9R31342qj32g/giphy.gif", category: "Flexibilidad" },
+             { name: "Estiramiento de Cuádriceps (de pie)", reps: "45 seg x lado", desc: "De pie, lleva el talón al glúteo, manteniendo las rodillas juntas.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzYycjJzb2Vnc3ZpaXR2bnJ3aDVqZ2xha2Q0cjlhcHg5ZWlmdndraSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/osl16i05s8acmYI2A2/giphy.gif", category: "Flexibilidad" },
+             { name: "Postura del Niño", reps: "60 seg", desc: "Lleva la cadera hacia los talones y extiende los brazos al frente.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWZjbzQ3cnV0NDB4NWVjbjlqNDZ6ZmZ2c2U5c3JvMTh0b2tqemV2NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4ZeD0ig26WNSk/giphy.gif", category: "Flexibilidad" },
+             { name: "Torsión Espinal (tumbado)", reps: "45 seg x lado", desc: "Tumbado, lleva una rodilla al pecho y luego crúzala por encima del cuerpo.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdyamk2amVmd2d5NGI3OWJpN2t0NTY1M2N0eDViMDl4eTd5MnFrMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0O9A6A3j2g0aZ3gI/giphy.gif", category: "Movilidad" }
+         ],
+         "2": [
+             { name: "Estiramiento de la Paloma", reps: "60 seg x lado", desc: "Estiramiento profundo para el glúteo y el psoas.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzdwZHpnaXk3bTJqNHJ5ZnM1NW1nNXdxdjQzZnducHFlMzlhY2k1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Flexibilidad" },
+             { name: "Estiramiento de Aductores (Mariposa)", reps: "60 seg", desc: "Sentado, junta las plantas de los pies y presiona las rodillas hacia el suelo.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWw0eDlyZDVwbmE2am1iNmNlZXN5dmVvOGI0enRncDFja2ZqYXN4bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oB1vUAcH4S3Is/giphy.gif", category: "Flexibilidad" },
+             { name: "Estiramiento de Hombro Cruzado", reps: "45 seg x brazo", desc: "Lleva un brazo recto a través del pecho y presiona suavemente con el otro.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3FucjB6aDNscTh0NXFmOGp1dzQ1dnlvMWQ2dzFmMG1wYm5sMHdqeiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYxV67D3t1Cscuc/giphy.gif", category: "Flexibilidad" },
+             { name: "Postura del Perro Boca Abajo", reps: "60 seg", desc: "Desde plancha, eleva la cadera al techo. Estira toda la cadena posterior.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHh3aWF0cjVwNDI2cGk3OXl4eGVhNXBndW13ZG5vYnljZjh5NnhvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zd5C68u21Pj1tYdYx/giphy.gif", category: "Movilidad" }
+         ],
+         "3": [
+             { name: "Estiramiento del 'Couch Stretch'", reps: "60 seg x lado", desc: "Coloca una rodilla en la esquina de una pared. El estiramiento más efectivo para cuádriceps y psoas.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdyamk2amVmd2d5NGI3OWJpN2t0NTY1M2N0eDViMDl4eTd5MnFrMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0O9A6A3j2g0aZ3gI/giphy.gif", category: "Flexibilidad" },
+             { name: "Estiramiento de la Rana", reps: "60 seg", desc: "A gatas, separa las rodillas lo más que puedas para un estiramiento profundo de aductores.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZtdmFxanowY2hncXp1dGk5eHk5cHJ0eTVwbnFpMDZtczJuMDU0dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7aD2v3Q0T6nInA0U/giphy.gif", category: "Flexibilidad" },
+             { name: "Estiramiento de Tríceps sobre la Cabeza", reps: "45 seg x brazo", desc: "Flexiona un codo por detrás de la cabeza y presiona suavemente con la otra mano.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzdwZHpnaXk3bTJqNHJ5ZnM1NW1nNXdxdjQzZnducHFlMzlhY2k1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Flexibilidad" },
+             { name: "Estiramiento de Muñecas y Antebrazos", reps: "30 seg cada posición", desc: "A gatas, apoya las palmas y luego el dorso de las manos para estirar.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2Z0eXNsa2RtaGs4aTRlM2ZxM2Z2b2pucXFqaHNxcnRibXkxYTVpNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/27c3yD3aAI36pYd95n/giphy.gif", category: "Movilidad" }
+         ]
+     },
+     months: {
+         "1": {
+             title: "Mes 1: Adaptación y Técnica",
+             interval: "40s trabajo / 20s descanso", rounds: "3-4", hiit_duration: 20,
+             days: {
+                 "day1": { title: "Día 1: Empuje y Core", theme: "day1", exercises: [
+                     { name: "Sentadilla (Peso Corporal)", desc: "Espalda recta, baja la cadera como si te sentaras.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZtdmFxanowY2hncXp1dGk5eHk5cHJ0eTVwbnFpMDZtczJuMDU0dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7aD2v3Q0T6nInA0U/giphy.gif", category: "Fuerza" },
+                     { name: "Flexiones Inclinadas", desc: "Manos en un banco o pared. A menor inclinación, mayor dificultad.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2d1ZnBvOWg0b2l0aTF3Z2lhcWk1N2VwYzZocnBnaDRnaWVmYm9oNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/J1uMvyh4tU3Cg/giphy.gif", category: "Fuerza" },
+                     { name: "Plancha Frontal", desc: "Cuerpo en línea recta de talones a cabeza.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHh3aWF0cjVwNDI2cGk3OXl4eGVhNXBndW13ZG5vYnljZjh5NnhvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zd5C68u21Pj1tYdYx/giphy.gif", category: "Core" },
+                     { name: "Remo con Toalla", desc: "Sentado, pasa una toalla por tus pies y tira de ella, retrayendo las escápulas.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbHN1aXc1eGFtdzU2dWVmaDUyOGQ1N3M1OHM3cmNybjI1ZWZqbmx1NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Ier1HoPq36Yve/giphy.gif", category: "Fuerza" },
+                     { name: "Puente de Glúteos", desc: "Eleva la cadera contrayendo los glúteos.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTVsczZpZWFyMXV1OHB6MGQ3MTI4dnYzbnZpdThldnRzZzVjNmg1aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/1BfS103n2wFj2/giphy.gif", category: "Fuerza" }
+                 ]},
+                 "day2": { title: "Día 2: Tracción y Resistencia", theme: "day2", exercises: [
+                     { name: "Zancadas Alternas", desc: "Da un paso largo y baja la rodilla de atrás casi hasta el suelo.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbHRhOW55emM4ZXR2NXRoZzM3b3g2c3E0eWd6amFtcjRyeGNoMzdoZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/StKiS6x69pgk1r1fhG/giphy.gif", category: "Fuerza" },
+                     { name: "Dominadas Australianas", desc: "Con una barra baja o mesa resistente. Tira del pecho hacia la barra.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN3Rtb3N5eTd4bndxb3E0cHp6cjJzcGZkaHhiMXdvaWtsemZta2JvcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7WTDH9g8h13l42M8/giphy.gif", category: "Fuerza" },
+                     { name: "Escaladores (Controlados)", desc: "En posición de plancha, lleva las rodillas al pecho lentamente.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExb214M2s2b3VwaHk4eWl6eDN6a2d0dHZ0ZmJpNHNqYjZocG5zZzB0ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VbnUQpnihPSaVFnqHe/giphy.gif", category: "Core" },
+                     { name: "Peso Muerto Rumano (sin peso)", desc: "Concéntrate en la bisagra de cadera, espalda recta.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2Z0eXNsa2RtaGs4aTRlM2ZxM2Z2b2pucXFqaHNxcnRibXkxYTVpNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/27c3yD3aAI36pYd95n/giphy.gif", category: "Movilidad" },
+                     { name: "Plancha Lateral", reps: "20s por lado", desc: "Mantén el cuerpo en una línea recta lateral.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExemRjN2RkM2NjbHYzNWs0cmk0OHlqbGtiNmJzZDk4a2ZqamM5M2Z2ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/J06U94T1yA1J3w2y9W/giphy.gif", category: "Core" }
+                 ]},
+                 "day3": { title: "Día 3: Full Body y Transferencia", theme: "day3", exercises: [
+                     { name: "Levantamiento Turco (Parcial)", desc: "Practica solo hasta el paso de apoyarte en la mano y elevar la cadera.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGk1MmM5aXp5M3hxYXBpOTJ5eG53NHRjc2c3aWdyN2M5MWRtdnUwMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/s3tC8iA64J2rS/giphy.gif", category: "Coordinación" },
+                     { name: "Swing (con mochila)", desc: "Movimiento explosivo de cadera.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzh6d296anRocG5uZXdmbnA0N3lrY3Njd3Z4eHZlcG0yZ3J0cmc5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Potencia" },
+                     { name: "Caminata del Granjero", desc: "Coge peso en cada mano y camina con la espalda recta.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdyamk2amVmd2d5NGI3OWJpN2t0NTY1M2N0eDViMDl4eTd5MnFrMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0O9A6A3j2g0aZ3gI/giphy.gif", category: "Fuerza" },
+                     { name: "Subidas al Cajón/Escalón", desc: "Alterna subir a una superficie elevada. Controla la bajada.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3d6dWcyMnM2ZnAwbTlsMnV4ejg0aTR6MmY4azlqajZocnhxaG13NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6wNq9R31342qj32g/giphy.gif", category: "Fuerza" },
+                     { name: "Press Pallof (con banda)", desc: "Con banda elástica, extiéndela al frente, resistiendo la rotación.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzYycjJzb2Vnc3ZpaXR2bnJ3aDVqZ2xha2Q0cjlhcHg5ZWlmdndraSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/osl16i05s8acmYI2A2/giphy.gif", category: "Core" }
+                 ]}
              }
-        }
-        perfectStreakEl.textContent = currentStreak;
+         },
+         "2": {
+             title: "Mes 2: Intensificación",
+             interval: "45s trabajo / 15s descanso", rounds: "4", hiit_duration: 25,
+             days: {
+                 "day1": { title: "Día 1: Fuerza Unilateral", theme: "day1", exercises: [
+                     { name: "Sentadilla Búlgara", desc: "Pie trasero elevado en una silla. Reta el equilibrio y la fuerza.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWZjbzQ3cnV0NDB4NWVjbjlqNDZ6ZmZ2c2U5c3JvMTh0b2tqemV2NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4ZeD0ig26WNSk/giphy.gif", category: "Fuerza" },
+                     { name: "Flexiones con Liberación de Manos", desc: "Baja hasta el suelo, levanta las manos brevemente y empuja explosivamente.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzdwZHpnaXk3bTJqNHJ5ZnM1NW1nNXdxdjQzZnducHFlMzlhY2k1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Potencia" },
+                     { name: "Plancha con Alcance", desc: "En plancha, extiende un brazo hacia adelante sin rotar las caderas.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWw0eDlyZDVwbmE2am1iNmNlZXN5dmVvOGI0enRncDFja2ZqYXN4bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oB1vUAcH4S3Is/giphy.gif", category: "Core" },
+                     { name: "Remo a una Mano (con mochila)", desc: "Inclínate con la espalda recta, apoya una mano en una silla y rema.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3FucjB6aDNscTh0NXFmOGp1dzQ1dnlvMWQ2dzFmMG1wYm5sMHdqeiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYxV67D3t1Cscuc/giphy.gif", category: "Fuerza" },
+                     { name: "Elevación de Cadera a una Pierna", desc: "Puente de glúteos, pero con una pierna extendida.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHh3aWF0cjVwNDI2cGk3OXl4eGVhNXBndW13ZG5vYnljZjh5NnhvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zd5C68u21Pj1tYdYx/giphy.gif", category: "Fuerza" }
+                 ]},
+                 "day2": { title: "Día 2: Resistencia y Core Avanzado", theme: "day2", exercises: [
+                     { name: "Zancada Inversa con Elevación", desc: "Da un paso atrás en una zancada y al volver, eleva la rodilla al pecho.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGk1MmM5aXp5M3hxYXBpOTJ5eG53NHRjc2c3aWdyN2M5MWRtdnUwMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/s3tC8iA64J2rS/giphy.gif", category: "Coordinación" },
+                     { name: "Flexiones en Pica", desc: "Desde una 'V' invertida, baja la cabeza hacia el suelo. Trabaja los hombros.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzh6d296anRocG5uZXdmbnA0N3lrY3Njd3Z4eHZlcG0yZ3J0cmc5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Fuerza" },
+                     { name: "Plancha Spiderman", desc: "En plancha, lleva la rodilla hacia el codo del mismo lado.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdyamk2amVmd2d5NGI3OWJpN2t0NTY1M2N0eDViMDl4eTd5MnFrMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0O9A6A3j2g0aZ3gI/giphy.gif", category: "Core" },
+                     { name: "Buenos Días (sin peso)", desc: "De pie, manos en la nuca. Realiza una bisagra de cadera.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzYycjJzb2Vnc3ZpaXR2bnJ3aDVqZ2xha2Q0cjlhcHg5ZWlmdndraSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/osl16i05s8acmYI2A2/giphy.gif", category: "Fuerza" },
+                     { name: "Limpia Parabrisas (Tumbado)", desc: "Boca arriba, piernas a 90 grados. Déjalas caer de lado a lado.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWZjbzQ3cnV0NDB4NWVjbjlqNDZ6ZmZ2c2U5c3JvMTh0b2tqemV2NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4ZeD0ig26WNSk/giphy.gif", category: "Core" }
+                 ]},
+                 "day3": { title: "Día 3: Potencia y Coordinación", theme: "day3", exercises: [
+                     { name: "Sentadilla con Salto", desc: "Realiza una sentadilla y salta explosivamente. Aterriza suavemente.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzdwZHpnaXk3bTJqNHJ5ZnM1NW1nNXdxdjQzZnducHFlMzlhY2k1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Potencia" },
+                     { name: "Flexiones Declinadas", desc: "Pies elevados en una silla. Mayor énfasis en pecho superior y hombros.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWw0eDlyZDVwbmE2am1iNmNlZXN5dmVvOGI0enRncDFja2ZqYXN4bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oB1vUAcH4S3Is/giphy.gif", category: "Fuerza" },
+                     { name: "Burpee (sin flexión)", desc: "Baja a plancha, vuelve a ponerte de pie y estira los brazos.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3FucjB6aDNscTh0NXFmOGp1dzQ1dnlvMWQ2dzFmMG1wYm5sMHdqeiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYxV67D3t1Cscuc/giphy.gif", category: "Potencia" },
+                     { name: "Paseo del Cangrejo", desc: "Sentado, manos y pies en el suelo, eleva la cadera y camina.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHh3aWF0cjVwNDI2cGk3OXl4eGVhNXBndW13ZG5vYnljZjh5NnhvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zd5C68u21Pj1tYdYx/giphy.gif", category: "Coordinación" },
+                     { name: "Toques al Talón (Tumbado)", desc: "Boca arriba, toca alternativamente cada talón.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGk1MmM5aXp5M3hxYXBpOTJ5eG53NHRjc2c3aWdyN2M5MWRtdnUwMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/s3tC8iA64J2rS/giphy.gif", category: "Core" }
+                 ]}
+             }
+         },
+         "3": {
+             title: "Mes 3: Potencia y Flujo",
+             interval: "50s trabajo / 10s descanso", rounds: "4-5", hiit_duration: 30,
+             days: {
+                 "day1": { title: "Día 1: Complejos de Fuerza", theme: "day1", exercises: [
+                     { name: "Sentadilla Pistola (asistida)", desc: "Sujétate a una puerta y realiza una sentadilla a una pierna.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzh6d296anRocG5uZXdmbnA0N3lrY3Njd3Z4eHZlcG0yZ3J0cmc5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Fuerza" },
+                     { name: "Flexión Arquero", desc: "Desde una posición de flexión ancha, desplaza el peso hacia un lado.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdyamk2amVmd2d5NGI3OWJpN2t0NTY1M2N0eDViMDl4eTd5MnFrMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0O9A6A3j2g0aZ3gI/giphy.gif", category: "Fuerza" },
+                     { name: "Plancha a Plancha Baja", desc: "Desde plancha de manos, baja a plancha de codos y vuelve a subir.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzYycjJzb2Vnc3ZpaXR2bnJ3aDVqZ2xha2Q0cjlhcHg5ZWlmdndraSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/osl16i05s8acmYI2A2/giphy.gif", category: "Core" },
+                     { name: "Remo Renegado (con garrafas)", desc: "En posición de plancha sobre garrafas, rema alternativamente.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWZjbzQ3cnV0NDB4NWVjbjlqNDZ6ZmZ2c2U5c3JvMTh0b2tqemV2NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4ZeD0ig26WNSk/giphy.gif", category: "Fuerza" },
+                     { name: "Elevación de Piernas (Tumbado)", desc: "Boca arriba, levanta las piernas rectas y bájalas lentamente.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzdwZHpnaXk3bTJqNHJ5ZnM1NW1nNXdxdjQzZnducHFlMzlhY2k1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Core" }
+                 ]},
+                 "day2": { title: "Día 2: Agilidad y Resistencia Total", theme: "day2", exercises: [
+                     { name: "Zancada con Salto", desc: "Desde una posición de zancada, salta y cambia las piernas en el aire.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWw0eDlyZDVwbmE2am1iNmNlZXN5dmVvOGI0enRncDFja2ZqYXN4bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oB1vUAcH4S3Is/giphy.gif", category: "Potencia" },
+                     { name: "Flexión Hindú", desc: "Desde pica, baja en un movimiento fluido hasta una cobra y vuelve.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3FucjB6aDNscTh0NXFmOGp1dzQ1dnlvMWQ2dzFmMG1wYm5sMHdqeiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYxV67D3t1Cscuc/giphy.gif", category: "Coordinación" },
+                     { name: "Oso Gateando (Bear Crawl)", desc: "A gatas con las rodillas flotando, avanza coordinando brazo y pierna opuestos.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHh3aWF0cjVwNDI2cGk3OXl4eGVhNXBndW13ZG5vYnljZjh5NnhvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zd5C68u21Pj1tYdYx/giphy.gif", category: "Coordinación" },
+                     { name: "Sentadilla Cosaca", desc: "Desde una postura amplia, desplaza el peso a un lado, bajando la cadera.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGk1MmM5aXp5M3hxYXBpOTJ5eG53NHRjc2c3aWdyN2M5MWRtdnUwMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/s3tC8iA64J2rS/giphy.gif", category: "Movilidad" },
+                     { name: "Abdominales en V (V-Ups)", desc: "Tumbado, levanta simultáneamente torso y piernas para formar una 'V'.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzh6d296anRocG5uZXdmbnA0N3lrY3Njd3Z4eHZlcG0yZ3J0cmc5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Core" }
+                 ]},
+                 "day3": { title: "Día 3: Reto de Calistenia", theme: "day3", exercises: [
+                     { name: "Paseo por la Pared (Wall Walk)", desc: "En plancha con los pies en la pared, camina con las manos hacia ella.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdyamk2amVmd2d5NGI3OWJpN2t0NTY1M2N0eDViMDl4eTd5MnFrMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0O9A6A3j2g0aZ3gI/giphy.gif", category: "Fuerza" },
+                     { name: "Flexión a una Mano (negativa)", desc: "Baja lo más lento que puedas usando solo un brazo.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzYycjJzb2Vnc3ZpaXR2bnJ3aDVqZ2xha2Q0cjlhcHg5ZWlmdndraSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/osl16i05s8acmYI2A2/giphy.gif", category: "Fuerza" },
+                     { name: "Plancha Superman", desc: "En plancha, extiende un brazo y la pierna opuesta.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWZjbzQ3cnV0NDB4NWVjbjlqNDZ6ZmZ2c2U5c3JvMTh0b2tqemV2NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4ZeD0ig26WNSk/giphy.gif", category: "Core" },
+                     { name: "Sentadilla Camarón (asistida)", desc: "Sujeta un pie por detrás y baja en una sentadilla con la otra pierna.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzdwZHpnaXk3bTJqNHJ5ZnM1NW1nNXdxdjQzZnducHFlMzlhY2k1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2wZ0gLPqY45c4/giphy.gif", category: "Fuerza" },
+                     { name: "L-Sit (Tuck Sit)", desc: "En el suelo o en paralelas, eleva las rodillas al pecho.", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWw0eDlyZDVwbmE2am1iNmNlZXN5dmVvOGI0enRncDFja2ZqYXN4bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oB1vUAcH4S3Is/giphy.gif", category: "Core" }
+                 ]}
+             }
+         }
+     }
+ };
 
-        if (complianceChart) complianceChart.destroy();
-        const ctx = document.getElementById('compliance-chart').getContext('2d');
-        complianceChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: weekLabels,
-                datasets: [{
-                    label: 'Entrenamientos por Semana',
-                    data: weeklyData,
-                    backgroundColor: weeklyData.map(d => d >= 3 ? '#f97316' : 'rgba(251, 146, 60, 0.7)'),
-                    borderRadius: 4,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 4,
-                        ticks: { stepSize: 1, color: '#9ca3af' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                    },
-                    x: {
-                        ticks: { color: '#9ca3af' },
-                        grid: { display: false }
-                    }
-                },
-                plugins: { legend: { display: false } }
-            }
-        });
-    }
+     // --- VARIABLES GLOBALES Y ELEMENTOS DEL DOM ---
+     let completedDays = {};
+     const STORAGE_KEY = 'workoutProgress';
 
-    // --- CARGA INICIAL ---
-    loadProgress();
-    renderCalendars(false);
-    updateAnalytics();
-    
-    document.querySelectorAll('header, .sticky, #progress-section').forEach((el, index) => {
-        el.classList.add('initial-hidden');
-        setTimeout(() => {
-            el.classList.add('fade-in');
-        }, 100 * (index + 1));
-    });
+     const planContent = document.getElementById('plan-content');
+     const monthTabs = document.querySelectorAll('.month-tab');
+     const progressBar = document.getElementById('progress-bar');
+     const modal = document.getElementById('exercise-modal');
+     const modalTitle = document.getElementById('modal-title');
+     const modalImg = document.getElementById('modal-img');
+     const modalDesc = document.getElementById('modal-desc');
+     const modalTags = document.getElementById('modal-tags');
+     const assignmentModal = document.getElementById('assignment-modal');
+     const assignmentTitle = document.getElementById('assignment-title');
+     const assignmentDateEl = document.getElementById('assignment-date');
+     const assignmentOptionsEl = document.getElementById('assignment-options');
+     const cancelAssignmentBtn = document.getElementById('cancel-assignment');
+     const deleteAssignmentBtn = document.getElementById('delete-assignment');
+     const viewToggle = document.getElementById('view-toggle');
+     const calendarContainer = document.getElementById('calendar-container');
 
-    // Vigilante para centrar el calendario solo cuando se hace visible
-    const progressSection = document.getElementById('progress-section');
-    const calendarObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                renderCalendars(true); // Activa el smart scroll
-                observer.unobserve(entry.target); // Se ejecuta solo una vez
-            }
-        });
-    }, { threshold: 0.1 }); 
+     let currentChart = null;
+     let complianceChart = null;
+     let isFullView = false;
+     let planningViewDate = new Date();
 
-    calendarObserver.observe(progressSection);
+     const categoryColors = {
+         "Fuerza": "bg-orange-200/20 text-orange-400", "Core": "bg-yellow-200/20 text-yellow-400",
+         "Movilidad": "bg-green-200/20 text-green-400", "Potencia": "bg-red-200/20 text-red-400",
+         "Coordinación": "bg-sky-200/20 text-sky-400", "Flexibilidad": "bg-purple-200/20 text-purple-400"
+     };
+
+     // --- FUNCIONES DE MODALES ---
+     function showModal(exercise) {
+         if (!exercise) return;
+         modalTitle.textContent = exercise.name;
+         modalImg.src = exercise.img;
+         modalDesc.textContent = exercise.desc;
+
+         modalTags.innerHTML = '';
+         if (exercise.category) {
+             const tag = document.createElement('span');
+             tag.textContent = exercise.category;
+             tag.className = `category-tag ${categoryColors[exercise.category] || 'bg-slate-100 text-slate-800'}`;
+             modalTags.appendChild(tag);
+         }
+
+         modal.classList.add('open');
+         modal.querySelector('.modal-content').classList.add('open');
+         document.body.style.overflow = 'hidden';
+     }
+
+     function hideModal() {
+         modal.classList.remove('open');
+         modal.querySelector('.modal-content').classList.remove('open');
+         document.body.style.overflow = 'auto';
+     }
+
+     function hideAssignmentModal() {
+         assignmentModal.classList.remove('open');
+         assignmentModal.querySelector('.modal-content').classList.remove('open');
+         document.body.style.overflow = 'auto';
+     }
+
+     // --- FUNCIONES DE RENDERIZADO ---
+     function createExerciseCard(exercise) {
+         const card = document.createElement('div');
+         card.className = 'exercise-card bg-gray-800/50 p-3 rounded-xl shadow-lg flex items-center gap-4 cursor-pointer hover:shadow-2xl hover:ring-2 hover:ring-orange-500 transition-all duration-300 transform hover:-translate-y-1 group';
+         card.dataset.exerciseName = exercise.name;
+         card.innerHTML = `
+             <img src="${exercise.img}" alt="${exercise.name}" class="w-24 h-24 object-cover rounded-lg bg-slate-700 flex-shrink-0" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/100x100/111827/d1d5db?text=Img';">
+             <div class="flex-grow">
+                 <h4 class="font-bold text-lg text-slate-100">${exercise.name}</h4>
+                 ${exercise.reps ? `<p class="text-slate-400">${exercise.reps}</p>` : ''}
+             </div>
+             <span class="theme-arrow text-orange-500 font-bold text-3xl transition-transform duration-300 group-hover:translate-x-1">&#8594;</span>
+         `;
+         return card;
+     }
+
+     function renderDay(month, dayKey) {
+         const dayData = planData.months[month].days[dayKey];
+         const warmupData = planData.warmups[month];
+         const cooldownData = planData.cooldowns[month];
+         const workoutDetails = document.getElementById('workout-details');
+
+         if (!dayData) {
+             workoutDetails.innerHTML = `<div class="text-center text-slate-400 p-8 bg-gray-800/30 rounded-xl">Entrenamiento no encontrado.</div>`;
+             return;
+         }
+
+         workoutDetails.innerHTML = `
+             <div class="space-y-4">
+                 <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
+                     <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
+                         <span><span class="theme-marker font-black mr-2">A</span> Calentamiento y Movilidad</span>
+                         <div class="accordion-icon text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
+                     </button>
+                     <div class="accordion-content">
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="warmup-container"></div>
+                     </div>
+                 </div>
+                 <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
+                     <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
+                         <span><span class="theme-marker font-black mr-2">B</span> Circuito HIIT: ${dayData.title}</span>
+                          <div class="accordion-icon text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
+                     </button>
+                     <div class="accordion-content">
+                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="hiit-container"></div>
+                     </div>
+                 </div>
+                 <div class="accordion-item rounded-xl shadow-lg overflow-hidden">
+                     <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-xl text-slate-100">
+                         <span><span class="theme-marker font-black mr-2">C</span> Enfriamiento y Estiramientos</span>
+                          <div class="accordion-icon text-2xl relative w-6 h-6"><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2"></div><div class="absolute bg-current w-full h-0.5 top-1/2 -translate-y-1/2 transition-transform duration-500 transform rotate-90"></div></div>
+                     </button>
+                     <div class="accordion-content">
+                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="cooldown-container"></div>
+                     </div>
+                 </div>
+             </div>
+         `;
+
+         const warmupContainer = document.getElementById('warmup-container');
+         warmupData.forEach(ex => warmupContainer.appendChild(createExerciseCard(ex)));
+
+         const hiitContainer = document.getElementById('hiit-container');
+         dayData.exercises.forEach(ex => hiitContainer.appendChild(createExerciseCard(ex)));
+
+         const cooldownContainer = document.getElementById('cooldown-container');
+         cooldownData.forEach(ex => cooldownContainer.appendChild(createExerciseCard(ex)));
+
+         document.querySelectorAll('.accordion-header').forEach(header => {
+             header.addEventListener('click', () => {
+                 const item = header.parentElement;
+                 const content = header.nextElementSibling;
+                 const icon = header.querySelector('.accordion-icon div:last-child');
+                 const isOpen = content.classList.contains('open');
+
+                 document.querySelectorAll('.accordion-content.open').forEach(openContent => {
+                     if (openContent !== content) {
+                         openContent.classList.remove('open');
+                         const openItem = openContent.parentElement;
+                         openItem.classList.remove('illuminated');
+                         openItem.querySelector('.accordion-icon div:last-child').style.transform = 'rotate(90deg)';
+                     }
+                 });
+
+                 content.classList.toggle('open');
+                 item.classList.toggle('illuminated');
+                 icon.style.transform = content.classList.contains('open') ? 'rotate(0deg)' : 'rotate(90deg)';
+             });
+         });
+     }
+
+     function renderPlan(month) {
+         const monthData = planData.months[month];
+         planContent.innerHTML = `
+             <div class="text-center mb-8">
+                 <h2 class="text-3xl font-bold text-slate-200">${monthData.title}</h2>
+                 <p class="text-md text-slate-400 mt-1"><strong>Intervalo:</strong> ${monthData.interval} | <strong>Rondas:</strong> ${monthData.rounds}</p>
+             </div>
+             <div id="days-nav" class="flex justify-center gap-2 md:gap-4 mb-8"></div>
+             <div id="workout-details"></div>
+             <div id="chart-section" class="mt-12 accordion-item rounded-xl shadow-lg p-6">
+                 <h3 class="text-2xl font-bold text-center mb-4 text-slate-100">Distribución de la Sesión - Mes ${month}</h3>
+                 <div class="chart-container mx-auto" style="height: 250px; width:100%; max-width: 400px;">
+                     <canvas id="session-chart"></canvas>
+                 </div>
+             </div>
+         `;
+
+         const daysNav = document.getElementById('days-nav');
+         daysNav.innerHTML = '';
+         Object.keys(monthData.days).forEach((dayKey, index) => {
+             const dayBtn = document.createElement('button');
+             dayBtn.className = `day-btn py-2 px-5 rounded-full font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 theme-${dayKey}`;
+             dayBtn.textContent = `Día ${index + 1}`;
+             dayBtn.dataset.day = dayKey;
+             dayBtn.dataset.month = month;
+             daysNav.appendChild(dayBtn);
+         });
+
+         const firstDayButton = daysNav.querySelector('.day-btn');
+         if (firstDayButton) {
+             planContent.classList.remove('theme-day1', 'theme-day2', 'theme-day3');
+             planContent.classList.add(`theme-${firstDayButton.dataset.day}`);
+             firstDayButton.classList.add('active');
+             renderDay(firstDayButton.dataset.month, firstDayButton.dataset.day);
+         }
+
+         if (currentChart) {
+             currentChart.destroy();
+         }
+         const ctx = document.getElementById('session-chart').getContext('2d');
+
+         const chartStructure = [
+             { label: 'Calentamiento', duration: 15, color: 'rgba(251, 146, 60, 0.7)' },
+             { label: 'HIIT', duration: monthData.hiit_duration, color: 'rgba(249, 115, 22, 0.9)' },
+             { label: 'Enfriamiento', duration: 10, color: 'rgba(234, 88, 12, 0.8)' }
+         ];
+
+         const chartData = {
+             labels: chartStructure.map(s => s.label),
+             datasets: [{
+                 data: chartStructure.map(s => s.duration),
+                 backgroundColor: chartStructure.map(s => s.color),
+                 borderWidth: 0,
+                 hoverOffset: 8,
+             }]
+         };
+
+         currentChart = new Chart(ctx, {
+             type: 'doughnut',
+             data: chartData,
+             options: {
+                 responsive: true,
+                 maintainAspectRatio: false,
+                 cutout: '60%',
+                 layout: {
+                     padding: 50
+                 },
+                 plugins: {
+                     legend: {
+                         display: false
+                     },
+                     tooltip: {
+                         enabled: false
+                     },
+                     datalabels: {
+                         anchor: 'end',
+                         align: 'end',
+                         offset: 8,
+                         borderRadius: 4,
+                         color: 'white',
+                         backgroundColor: (context) => {
+                             return context.dataset.backgroundColor;
+                         },
+                         padding: {
+                            top: 4,
+                            bottom: 4,
+                            left: 6,
+                            right: 6
+                         },
+                         font: {
+                             weight: 'bold',
+                             size: 11,
+                         },
+                         formatter: (value, context) => {
+                             const label = context.chart.data.labels[context.dataIndex];
+                             return `${label} (${value} min)`;
+                         }
+                     }
+                 }
+             }
+         });
+     }
+
+     // --- LÓGICA DE CALENDARIO Y PROGRESO ---
+     function loadProgress() {
+         const data = localStorage.getItem(STORAGE_KEY);
+         completedDays = data ? JSON.parse(data) : {};
+     }
+
+     function saveProgress() {
+         localStorage.setItem(STORAGE_KEY, JSON.stringify(completedDays));
+         updateAnalytics();
+         renderTodaysWorkoutInfo();
+     }
+
+     function renderTodaysWorkoutInfo() {
+         const infoBox = document.getElementById('todays-workout-info');
+         if (!infoBox || isFullView) {
+             if(infoBox) infoBox.innerHTML = '';
+             return;
+         }
+
+         const today = new Date();
+         const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+         const todaysEntry = completedDays[dateStr];
+
+         if (todaysEntry) {
+             const monthData = planData.months[todaysEntry.month];
+             const dayData = monthData.days[todaysEntry.workout];
+             const theme = dayData.theme;
+
+             const monthNum = todaysEntry.month;
+             const dayNum = Object.keys(monthData.days).indexOf(todaysEntry.workout) + 1;
+             const hiitTitle = dayData.title;
+
+             let borderColorClass = '';
+             if (theme === 'day1') borderColorClass = 'theme-border-day1';
+             else if (theme === 'day2') borderColorClass = 'theme-border-day2';
+             else if (theme === 'day3') borderColorClass = 'theme-border-day3';
+
+             infoBox.innerHTML = `
+                 <div class="bg-gray-900/50 border-l-4 ${borderColorClass} rounded-r-xl p-4 transition-all duration-300">
+                     <p class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Entrenamiento de Hoy</p>
+                     <h4 class="text-lg font-bold text-white mt-1">${hiitTitle}</h4>
+                     <p class="text-sm text-slate-400">(Mes ${monthNum}, Día ${dayNum})</p>
+                     <p class="text-xs text-slate-400 mt-2 font-mono">
+                         ${monthData.rounds} Rondas | ${monthData.interval.replace(' ', '')}
+                     </p>
+                 </div>
+             `;
+             infoBox.style.display = 'block';
+         } else {
+             infoBox.innerHTML = '';
+             infoBox.style.display = 'none';
+         }
+     }
+
+     function renderCalendars(smartScroll = false) {
+         if(isFullView){
+             renderFullCalendar();
+         } else {
+             renderTimelineCalendar(smartScroll);
+         }
+         renderTodaysWorkoutInfo();
+     }
+
+     function renderTimelineCalendar(smartScroll = false) {
+         const timelineWrapper = calendarContainer.querySelector('#timeline-wrapper');
+         const scrollPosition = timelineWrapper ? timelineWrapper.querySelector('.timeline-container').scrollLeft : 0;
+
+         if (!timelineWrapper) {
+             calendarContainer.innerHTML = `
+                 <div id="timeline-wrapper">
+                     <div class="flex justify-between items-center mb-2 px-2">
+                         <button id="prev-timeline-month" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&lt;</button>
+                         <h4 id="timeline-month-year" class="text-lg font-bold text-center text-amber-400"></h4>
+                         <button id="next-timeline-month" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&gt;</button>
+                     </div>
+                     <div id="timeline-calendar" class="timeline-container flex items-center gap-2 p-2"></div>
+                 </div>
+             `;
+         }
+
+         const timelineEl = document.getElementById('timeline-calendar');
+         const monthYearEl = document.getElementById('timeline-month-year');
+         timelineEl.innerHTML = '';
+
+         monthYearEl.textContent = planningViewDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+
+         const year = planningViewDate.getFullYear();
+         const month = planningViewDate.getMonth();
+         const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+         for (let i = 1; i <= daysInMonth; i++) {
+             const day = new Date(year, month, i);
+             const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+
+             const dayEl = document.createElement('div');
+             dayEl.className = 'timeline-day flex flex-col justify-center items-center';
+             dayEl.dataset.date = dateStr;
+             dayEl.innerHTML = `
+                 <span class="text-xs uppercase">${day.toLocaleString('es-ES', { weekday: 'short' })}</span>
+                 <span class="text-2xl font-bold">${day.getDate()}</span>
+             `;
+
+             const planStartDate = localStorage.getItem('workoutStartDate');
+             if (planStartDate && day < new Date(planStartDate + 'T00:00:00')) {
+                 dayEl.classList.add('out-of-range');
+             }
+
+             if (completedDays[dateStr]) {
+                  const theme = completedDays[dateStr].theme;
+                  if(completedDays[dateStr].completed){
+                      dayEl.classList.add('completed', `theme-${theme}`);
+                  } else {
+                      dayEl.classList.add('scheduled', `theme-${theme}`);
+                  }
+             }
+             if(day.toDateString() === new Date().toDateString()){
+                  dayEl.classList.add('today');
+             }
+             if(dateStr === planStartDate) {
+                  dayEl.classList.add('start-date');
+             }
+             timelineEl.appendChild(dayEl);
+         }
+
+         if(smartScroll) {
+             setTimeout(() => {
+                 const today = new Date();
+                 const planStartDate = localStorage.getItem('workoutStartDate');
+                 let targetEl = null;
+
+                 if (planningViewDate.getFullYear() === today.getFullYear() && planningViewDate.getMonth() === today.getMonth()) {
+                     targetEl = document.querySelector('.timeline-day.today');
+                 } else if (planStartDate && new Date(planStartDate).getFullYear() === planningViewDate.getFullYear() && new Date(planStartDate).getMonth() === planningViewDate.getMonth()) {
+                     targetEl = document.querySelector('.timeline-day.start-date');
+                 }
+
+                 if(targetEl) {
+                     targetEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                 } else {
+                      timelineEl.scrollLeft = 0;
+                 }
+             }, 100);
+         } else if (scrollPosition !== null) {
+              timelineEl.scrollLeft = scrollPosition;
+         }
+     }
+
+     function renderFullCalendar() {
+         const todaysWorkoutInfoEl = document.getElementById('todays-workout-info');
+         if(todaysWorkoutInfoEl) todaysWorkoutInfoEl.innerHTML = '';
+
+         calendarContainer.innerHTML = `
+             <div class="flex justify-between items-center mb-4">
+                  <button id="prev-block-btn" class="p-2 rounded-full hover:bg-gray-700 transition-colors">&lt; 3 Meses</button>
+                  <h4 id="planning-view-header" class="text-lg font-bold text-center text-amber-400"></h4>
+                  <button id="next-block-btn" class="p-2 rounded-full hover:bg-gray-700 transition-colors">3 Meses &gt;</button>
+             </div>
+             <div id="planning-grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+             <div id="plan-end-date-info" class="text-center text-slate-400 text-sm mt-4 flex flex-col items-center gap-2"></div>
+         `;
+
+         const planningGridContainer = document.getElementById('planning-grid-container');
+         let date = new Date(planningViewDate);
+         date.setDate(1);
+
+         for (let i = 0; i < 3; i++) {
+             const monthDiv = document.createElement('div');
+             const monthHeader = document.createElement('h4');
+             monthHeader.className = 'text-md font-bold text-center text-white mb-2';
+             monthHeader.textContent = date.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+             monthDiv.appendChild(monthHeader);
+
+             const grid = document.createElement('div');
+             grid.className = 'grid grid-cols-7 gap-1 text-center text-xs text-slate-400 mb-1';
+             ['D', 'L', 'M', 'X', 'J', 'V', 'S'].forEach(day => grid.innerHTML += `<span>${day}</span>`);
+             monthDiv.appendChild(grid);
+
+             const daysGrid = document.createElement('div');
+             daysGrid.className = 'grid grid-cols-7 gap-1';
+             const year = date.getFullYear();
+             const month = date.getMonth();
+             const firstDayOfMonth = new Date(year, month, 1).getDay();
+             const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+             for (let j = 0; j < firstDayOfMonth; j++) {
+                 daysGrid.innerHTML += `<div></div>`;
+             }
+
+             for (let j = 1; j <= daysInMonth; j++) {
+                 const dayEl = document.createElement('div');
+                 const currentDate = new Date(year, month, j);
+                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(j).padStart(2, '0')}`;
+                 dayEl.className = 'grid-day';
+                 dayEl.textContent = j;
+                 dayEl.dataset.date = dateStr;
+
+                 if (completedDays[dateStr]) {
+                     const theme = completedDays[dateStr].theme;
+                     if (completedDays[dateStr].completed) dayEl.classList.add('completed', `theme-${theme}`);
+                     else dayEl.classList.add('scheduled', `theme-${theme}`);
+                 }
+                 if (currentDate.toDateString() === new Date().toDateString()) dayEl.classList.add('today');
+
+                 const planStartDate = localStorage.getItem('workoutStartDate');
+                 if(planStartDate) {
+                     const startDateObj = new Date(planStartDate + 'T00:00:00');
+                     const rangeEndDate = new Date(startDateObj);
+                     rangeEndDate.setDate(startDateObj.getDate() + 83);
+
+                     if (currentDate >= startDateObj && currentDate <= rangeEndDate) {
+                         dayEl.classList.add('in-range');
+                     } else {
+                          dayEl.classList.add('out-of-range');
+                     }
+                      if(dateStr === planStartDate) dayEl.classList.add('start-date');
+                 }
+
+                 daysGrid.appendChild(dayEl);
+             }
+             monthDiv.appendChild(daysGrid);
+             planningGridContainer.appendChild(monthDiv);
+             date.setMonth(date.getMonth() + 1);
+         }
+
+         const infoContainer = document.getElementById('plan-end-date-info');
+         infoContainer.innerHTML = '';
+         const planStartDate = localStorage.getItem('workoutStartDate');
+
+         const textSpan = document.createElement('span');
+         infoContainer.appendChild(textSpan);
+
+         if (planStartDate) {
+             const rangeEndDate = new Date(planStartDate);
+             rangeEndDate.setDate(rangeEndDate.getDate() + 83);
+             textSpan.textContent = `Tu plan termina el ${rangeEndDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}.`;
+         } else {
+             textSpan.textContent = 'Haz clic en un día para establecer el inicio de tu plan de 12 semanas.';
+         }
+
+         const buttonWrapper = document.createElement('div');
+         buttonWrapper.className = 'flex justify-center items-center gap-2';
+
+         if (planStartDate) {
+             const resetBtn = document.createElement('button');
+             resetBtn.id = 'reset-start-date';
+             resetBtn.className = 'text-xs bg-yellow-800/80 text-yellow-300 px-2 py-1 rounded-md hover:bg-yellow-700';
+             resetBtn.textContent = 'Resetear Inicio';
+             buttonWrapper.appendChild(resetBtn);
+         }
+
+         if (Object.keys(completedDays).length > 0) {
+             const clearBtn = document.createElement('button');
+             clearBtn.id = 'clear-all-marks';
+             clearBtn.className = 'text-xs bg-red-800/80 text-red-300 px-2 py-1 rounded-md hover:bg-red-700';
+             clearBtn.textContent = 'Limpiar Todo';
+             buttonWrapper.appendChild(clearBtn);
+         }
+
+         if (buttonWrapper.hasChildNodes()) {
+             infoContainer.appendChild(buttonWrapper);
+         }
+     }
+
+     // --- MANEJADORES DE EVENTOS ---
+     viewToggle.addEventListener('change', () => {
+         isFullView = viewToggle.checked;
+         const dot = document.querySelector('.dot');
+         dot.style.transform = isFullView ? 'translateX(1.5rem)' : 'translateX(0)';
+         planningViewDate = new Date();
+         renderCalendars(true);
+     });
+
+     monthTabs.forEach(tab => {
+         tab.addEventListener('click', () => {
+             const month = tab.dataset.month;
+             renderPlan(month);
+             monthTabs.forEach(t => {
+                 t.classList.remove('tab-active');
+                 t.classList.add('tab-inactive');
+             });
+             tab.classList.add('tab-active');
+             tab.classList.remove('tab-inactive');
+
+             progressBar.style.width = `${(parseInt(month) / 3 * 100)}%`;
+         });
+     });
+
+     calendarContainer.addEventListener('click', e => {
+         const dayTarget = e.target.closest('.timeline-day, .grid-day');
+         if (dayTarget && dayTarget.dataset.date) {
+             handleDayClick(dayTarget.dataset.date);
+             return;
+         }
+
+         const navTargetId = e.target.closest('button')?.id;
+         switch (navTargetId) {
+             case 'prev-timeline-month':
+                 planningViewDate.setMonth(planningViewDate.getMonth() - 1);
+                 renderTimelineCalendar(true);
+                 renderTodaysWorkoutInfo();
+                 break;
+             case 'next-timeline-month':
+                 planningViewDate.setMonth(planningViewDate.getMonth() + 1);
+                 renderTimelineCalendar(true);
+                 renderTodaysWorkoutInfo();
+                 break;
+             case 'prev-block-btn':
+                 planningViewDate.setMonth(planningViewDate.getMonth() - 3);
+                 renderFullCalendar();
+                 break;
+             case 'next-block-btn':
+                 planningViewDate.setMonth(planningViewDate.getMonth() + 3);
+                 renderFullCalendar();
+                 break;
+             case 'reset-start-date':
+                 localStorage.removeItem('workoutStartDate');
+                 renderCalendars();
+                 updateAnalytics();
+                 break;
+             case 'clear-all-marks':
+                 showClearAllConfirmation();
+                 break;
+         }
+     });
+
+     modal.addEventListener('click', (e) => {
+         if (e.target === modal || e.target.closest('#modal-close')) {
+             hideModal();
+         }
+     });
+
+     cancelAssignmentBtn.addEventListener('click', hideAssignmentModal);
+
+     function handleDayClick(date) {
+         const entry = completedDays[date];
+         const activeMonth = document.querySelector('.month-tab.tab-active').dataset.month;
+         const monthWorkouts = planData.months[activeMonth].days;
+         const planStartDate = localStorage.getItem('workoutStartDate');
+         const clickedDate = new Date(date + 'T00:00:00');
+         const today = new Date();
+         today.setHours(0,0,0,0);
+
+         if(planStartDate && clickedDate < new Date(planStartDate + 'T00:00:00')) {
+             return;
+         }
+
+         assignmentDateEl.textContent = clickedDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+         assignmentOptionsEl.innerHTML = '';
+         deleteAssignmentBtn.style.display = 'none';
+
+         if (!isFullView) { // Vista de Progreso (timeline)
+             if (entry) {
+                 entry.completed = !entry.completed;
+                 saveProgress();
+                 renderCalendars(false);
+                 renderDay(entry.month, entry.workout);
+             } else {
+                 if (clickedDate < today) return;
+                 assignmentTitle.textContent = "Programar Entrenamiento";
+                 if (!planStartDate) {
+                     const startPlanBtn = document.createElement('button');
+                     startPlanBtn.className = 'w-full p-3 bg-green-600 rounded-lg text-white font-semibold hover:bg-green-500 transition-colors';
+                     startPlanBtn.textContent = 'Establecer como Primer Día del Plan';
+                     startPlanBtn.onclick = () => {
+                         localStorage.setItem('workoutStartDate', date);
+                         renderCalendars(false);
+                         hideAssignmentModal();
+                     }
+                     assignmentOptionsEl.appendChild(startPlanBtn);
+                 }
+                 Object.keys(monthWorkouts).forEach(dayKey => {
+                     const optionBtn = document.createElement('button');
+                     optionBtn.className = 'w-full p-3 bg-gray-700 rounded-lg text-white font-semibold transition-colors';
+                     optionBtn.classList.add(`assign-btn-${dayKey}`);
+                     optionBtn.textContent = `Programar: ${monthWorkouts[dayKey].title}`;
+                     optionBtn.onclick = () => {
+                         if (!localStorage.getItem('workoutStartDate')) {
+                             localStorage.setItem('workoutStartDate', date);
+                         }
+                         completedDays[date] = { workout: dayKey, completed: false, month: activeMonth, theme: planData.months[activeMonth].days[dayKey].theme };
+                         saveProgress();
+                         renderCalendars(false);
+                         hideAssignmentModal();
+                     };
+                     assignmentOptionsEl.appendChild(optionBtn);
+                 });
+                 assignmentModal.classList.add('open');
+                 assignmentModal.querySelector('.modal-content').classList.add('open');
+             }
+             return;
+         }
+
+         // Vista de Planificación (3 meses)
+         assignmentTitle.textContent = "Acciones de Planificación";
+         if (entry) {
+              const unmarkBtn = document.createElement('button');
+              unmarkBtn.className = 'w-full p-3 bg-yellow-600 rounded-lg text-white font-semibold hover:bg-yellow-500 transition-colors';
+              unmarkBtn.textContent = "Desmarcar Día (Volver a Programado)";
+              unmarkBtn.onclick = () => {
+                 entry.completed = false;
+                 saveProgress();
+                 renderCalendars();
+                 hideAssignmentModal();
+              };
+              if(entry.completed) assignmentOptionsEl.appendChild(unmarkBtn);
+
+              deleteAssignmentBtn.style.display = 'block';
+              deleteAssignmentBtn.onclick = () => {
+                 delete completedDays[date];
+                 saveProgress();
+                 renderCalendars();
+                 hideAssignmentModal();
+              };
+         } else {
+              if (!planStartDate) {
+                 if(clickedDate >= today) {
+                     const startPlanBtn = document.createElement('button');
+                     startPlanBtn.className = 'w-full p-3 bg-green-600 rounded-lg text-white font-semibold hover:bg-green-500 transition-colors';
+                     startPlanBtn.textContent = `Establecer como Primer Día`;
+                     startPlanBtn.onclick = () => {
+                         localStorage.setItem('workoutStartDate', date);
+                         renderCalendars();
+                         hideAssignmentModal();
+                     };
+                     assignmentOptionsEl.appendChild(startPlanBtn);
+                 }
+             }
+             Object.keys(monthWorkouts).forEach(dayKey => {
+                 const optionBtn = document.createElement('button');
+                 optionBtn.className = 'w-full p-3 bg-gray-700 rounded-lg text-white font-semibold transition-colors';
+                 optionBtn.classList.add(`assign-btn-${dayKey}`);
+                 optionBtn.textContent = `Programar: ${monthWorkouts[dayKey].title}`;
+                 optionBtn.onclick = () => {
+                     if (!localStorage.getItem('workoutStartDate')) {
+                         localStorage.setItem('workoutStartDate', date);
+                     }
+                     completedDays[date] = { workout: dayKey, completed: false, month: activeMonth, theme: planData.months[activeMonth].days[dayKey].theme };
+                     saveProgress();
+                     renderCalendars();
+                     hideAssignmentModal();
+                 };
+                 assignmentOptionsEl.appendChild(optionBtn);
+             });
+         }
+
+         assignmentModal.classList.add('open');
+         assignmentModal.querySelector('.modal-content').classList.add('open');
+         document.body.style.overflow = 'hidden';
+     }
+
+     function showClearAllConfirmation() {
+         assignmentTitle.textContent = "¿Borrar Todo el Progreso?";
+         assignmentDateEl.textContent = "Esta acción eliminará todas tus marcas y la fecha de inicio del plan. No se puede deshacer.";
+         assignmentOptionsEl.innerHTML = '';
+
+         const confirmBtn = document.createElement('button');
+         confirmBtn.className = 'w-full p-3 bg-red-600 rounded-lg text-white font-semibold hover:bg-red-500 transition-colors';
+         confirmBtn.textContent = "Sí, Limpiar Todo";
+         confirmBtn.onclick = () => {
+             completedDays = {};
+             localStorage.removeItem('workoutStartDate');
+             saveProgress();
+             renderCalendars();
+             hideAssignmentModal();
+         };
+         assignmentOptionsEl.appendChild(confirmBtn);
+
+         deleteAssignmentBtn.style.display = 'none';
+         assignmentModal.classList.add('open');
+         assignmentModal.querySelector('.modal-content').classList.add('open');
+         document.body.style.overflow = 'hidden';
+     }
+
+     function updateAnalytics(){
+         const totalWorkoutsEl = document.getElementById('total-workouts');
+         const totalComplianceEl = document.getElementById('total-compliance');
+         const perfectStreakEl = document.getElementById('perfect-streak');
+
+         const completedOnly = Object.keys(completedDays).filter(date => completedDays[date] && completedDays[date].completed).sort();
+
+         if(completedOnly.length === 0) {
+             totalWorkoutsEl.textContent = '0';
+             totalComplianceEl.textContent = '0%';
+             perfectStreakEl.textContent = '0';
+             if(complianceChart) {
+                 complianceChart.destroy();
+                 complianceChart = null;
+             }
+             return;
+         }
+
+         totalWorkoutsEl.textContent = completedOnly.length;
+
+         const startDateString = localStorage.getItem('workoutStartDate') || completedOnly[0];
+         const startDate = new Date(startDateString + 'T00:00:00');
+         const firstDayOfWeek = new Date(startDate);
+         firstDayOfWeek.setDate(startDate.getDate() - (startDate.getDay() === 0 ? 6 : startDate.getDay() - 1));
+
+         const weeklyData = Array(12).fill(0);
+         const weekLabels = Array.from({length: 12}, (_, i) => `S${i + 1}`);
+
+         completedOnly.forEach(dayStr => {
+             const day = new Date(dayStr + 'T00:00:00');
+             const weekIndex = Math.floor((day - firstDayOfWeek) / (1000 * 60 * 60 * 24 * 7));
+             if(weekIndex >= 0 && weekIndex < 12) {
+                 weeklyData[weekIndex]++;
+             }
+         });
+
+         const today = new Date();
+         const weeksPassed = Math.floor((today - firstDayOfWeek) / (1000 * 60 * 60 * 24 * 7)) + 1;
+         const possibleWorkouts = Math.max(1, (weeksPassed -1) * 3);
+         const compliance = possibleWorkouts > 0 ? Math.min(100, (completedOnly.length / possibleWorkouts) * 100).toFixed(0) : 0;
+         totalComplianceEl.textContent = `${compliance}%`;
+
+         let perfectStreak = 0;
+         const lastActiveWeekIndex = weeklyData.map(d => d > 0).lastIndexOf(true);
+         
+         if (lastActiveWeekIndex > -1) {
+             for (let i = lastActiveWeekIndex; i >= 0; i--) {
+                 if (weeklyData[i] >= 3) {
+                     perfectStreak++;
+                 } else {
+                     break;
+                 }
+             }
+         }
+         perfectStreakEl.textContent = perfectStreak;
 
 
-    planContent.addEventListener('click', e => {
-        const cardTarget = e.target.closest('.exercise-card');
-        const dayTarget = e.target.closest('.day-btn');
+         if (complianceChart) complianceChart.destroy();
+         const ctx = document.getElementById('compliance-chart').getContext('2d');
+         complianceChart = new Chart(ctx, {
+             type: 'bar',
+             data: {
+                 labels: weekLabels,
+                 datasets: [{
+                     label: 'Entrenamientos por Semana',
+                     data: weeklyData,
+                     backgroundColor: weeklyData.map(d => d >= 3 ? '#f97316' : 'rgba(251, 146, 60, 0.7)'),
+                     borderRadius: 4,
+                 }]
+             },
+             options: {
+                 responsive: true,
+                 maintainAspectRatio: false,
+                 scales: {
+                     y: {
+                         beginAtZero: true,
+                         max: 4,
+                         ticks: { stepSize: 1, color: '#9ca3af' },
+                         grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                     },
+                     x: {
+                         ticks: { color: '#9ca3af' },
+                         grid: { display: false }
+                     }
+                 },
+                 plugins: { legend: { display: false } }
+             }
+         });
+     }
 
-        if(cardTarget){
-            const exerciseName = cardTarget.dataset.exerciseName;
-            const allExercises = [...planData.warmups[1],...planData.warmups[2],...planData.warmups[3], ...planData.cooldowns[1],...planData.cooldowns[2],...planData.cooldowns[3]];
-            Object.values(planData.months).forEach(m => Object.values(m.days).forEach(d => allExercises.push(...d.exercises)));
-            const exercise = allExercises.find(ex => ex.name === exerciseName);
-            showModal(exercise);
-        } else if (dayTarget) {
-            const month = dayTarget.dataset.month;
-            const dayKey = dayTarget.dataset.day;
-            
-            planContent.classList.remove('theme-day1', 'theme-day2', 'theme-day3');
-            planContent.classList.add(`theme-${dayKey}`); 
-            
-            document.querySelectorAll('#days-nav .day-btn').forEach(btn => btn.classList.remove('active'));
-            dayTarget.classList.add('active');
+     // --- CARGA INICIAL ---
+     loadProgress();
+     renderCalendars(false);
+     updateAnalytics();
 
-            renderDay(month, dayKey);
-        }
-    });
+     document.querySelectorAll('header, .sticky, #progress-section').forEach((el, index) => {
+         el.classList.add('initial-hidden');
+         setTimeout(() => {
+             el.classList.add('fade-in');
+         }, 100 * (index + 1));
+     });
 
-    renderPlan('1');
+     // Vigilante para centrar el calendario solo cuando se hace visible
+     const progressSection = document.getElementById('progress-section');
+     const calendarObserver = new IntersectionObserver((entries, observer) => {
+         entries.forEach(entry => {
+             if (entry.isIntersecting) {
+                 renderCalendars(true); // Activa el smart scroll
+                 observer.unobserve(entry.target); // Se ejecuta solo una vez
+             }
+         });
+     }, { threshold: 0.1 });
 
-});
-</script>
-</body>
-</html>
+     calendarObserver.observe(progressSection);
+
+
+     planContent.addEventListener('click', e => {
+         const cardTarget = e.target.closest('.exercise-card');
+         const dayTarget = e.target.closest('.day-btn');
+
+         if(cardTarget){
+             const exerciseName = cardTarget.dataset.exerciseName;
+             const allExercises = [...planData.warmups[1],...planData.warmups[2],...planData.warmups[3], ...planData.cooldowns[1],...planData.cooldowns[2],...planData.cooldowns[3]];
+             Object.values(planData.months).forEach(m => Object.values(m.days).forEach(d => allExercises.push(...d.exercises)));
+             const exercise = allExercises.find(ex => ex.name === exerciseName);
+             showModal(exercise);
+         } else if (dayTarget) {
+             const month = dayTarget.dataset.month;
+             const dayKey = dayTarget.dataset.day;
+
+             planContent.classList.remove('theme-day1', 'theme-day2', 'theme-day3');
+             planContent.classList.add(`theme-${dayKey}`);
+
+             document.querySelectorAll('#days-nav .day-btn').forEach(btn => btn.classList.remove('active'));
+             dayTarget.classList.add('active');
+
+             renderDay(month, dayKey);
+         }
+     });
+
+     renderPlan('1');
+
+ });
+ </script>
+ </body>
+ </html>
 
